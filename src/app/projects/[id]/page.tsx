@@ -16,7 +16,7 @@ export default async function ProjectPage({
     where: { id },
     include: {
       tasks: {
-        include: { assignee: true },
+        include: { assignee: true, checklist: { orderBy: { position: "asc" } } },
         orderBy: { position: "asc" },
       },
     },
