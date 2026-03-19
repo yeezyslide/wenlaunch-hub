@@ -16,7 +16,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "File too large (max 10MB)" }, { status: 400 });
     }
 
-    const blob = await put(file.name, file, {
+    const uniqueName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
+    const blob = await put(uniqueName, file, {
       access: "public",
     });
 
