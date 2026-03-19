@@ -1,11 +1,28 @@
+import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { ProjectCard } from "@/components/projects/project-card";
 import { ProjectForm } from "@/components/projects/project-form";
+import { ProjectFilters } from "@/components/projects/project-filters";
+import { ProjectKanban } from "@/components/projects/project-kanban";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
+  const statusFilter = typeof params.status === "string" ? params.status : undefined;
+  const tagFilter = typeof params.tag === "string" ? params.tag : undefined;
+  const view = typeof params.view === "string" ? params.view : "grid";
+
+  const where: Record<string, unknown> = {};
+  if (statusFilter) where.status = statusFilter;
+  if (tagFilter) where.tags = { contains: tagFilter };
+
   const projects = await prisma.project.findMany({
+    where,
     include: { _count: { select: { tasks: true } } },
     orderBy: { createdAt: "desc" },
   });
@@ -19,11 +36,18 @@ export default async function DashboardPage() {
         </div>
         <ProjectForm />
       </div>
+      <div className="mb-5">
+        <Suspense>
+          <ProjectFilters />
+        </Suspense>
+      </div>
       {projects.length === 0 ? (
         <div className="text-center py-24 text-muted-foreground/60">
           <p className="text-[17px] font-medium mb-1">No projects yet</p>
           <p className="text-[14px]">Create your first project to get started.</p>
         </div>
+      ) : view === "kanban" ? (
+        <ProjectKanban projects={projects} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {projects.map((project) => (

@@ -1,4 +1,19 @@
-export const PROJECT_STATUSES = ["Active", "On Hold", "Completed"] as const;
+export const PROJECT_STATUSES = [
+  "Waiting to Start",
+  "On Hold",
+  "Planning",
+  "Ready to Design",
+  "Designing",
+  "Await Design Feedback",
+  "Design Revisions",
+  "Ready to Develop",
+  "Developing",
+  "Await Dev Feedback",
+  "Dev Revisions",
+  "Project Handoff",
+  "SEO Prep",
+  "Done",
+] as const;
 
 export const TASK_STATUSES = ["To Do", "In Progress", "In Review", "Done"] as const;
 
@@ -12,9 +27,20 @@ export const PRIORITY_COLORS: Record<string, string> = {
 };
 
 export const STATUS_COLORS: Record<string, string> = {
-  Active: "bg-emerald-50 text-emerald-700",
+  "Waiting to Start": "bg-slate-100 text-slate-600",
   "On Hold": "bg-amber-50 text-amber-700",
-  Completed: "bg-slate-100 text-slate-600",
+  Planning: "bg-blue-50 text-blue-600",
+  "Ready to Design": "bg-indigo-50 text-indigo-600",
+  Designing: "bg-violet-50 text-violet-700",
+  "Await Design Feedback": "bg-purple-50 text-purple-600",
+  "Design Revisions": "bg-fuchsia-50 text-fuchsia-600",
+  "Ready to Develop": "bg-cyan-50 text-cyan-700",
+  Developing: "bg-teal-50 text-teal-700",
+  "Await Dev Feedback": "bg-emerald-50 text-emerald-600",
+  "Dev Revisions": "bg-green-50 text-green-700",
+  "Project Handoff": "bg-orange-50 text-orange-600",
+  "SEO Prep": "bg-yellow-50 text-yellow-700",
+  Done: "bg-emerald-50 text-emerald-700",
 };
 
 export const PROJECT_TAGS = ["Framer Dev", "Design", "Shopify Dev"] as const;
