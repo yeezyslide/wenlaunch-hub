@@ -40,32 +40,27 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
 
   return (
     <div className="flex gap-8 mb-10">
-      <div className="flex flex-col gap-3 shrink-0">
-        <div className="w-52 h-36 rounded-2xl overflow-hidden bg-muted/50 shadow-sm">
-          {project.imageUrl ? (
-            <img
-              src={project.imageUrl}
-              alt={project.name}
-              className="object-cover w-full h-full"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-blue-500/10 via-indigo-500/10 to-violet-500/10 flex items-center justify-center">
-              <span className="text-5xl font-semibold text-muted-foreground/25">
-                {project.name.charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
-        </div>
-        {project.logoUrl && (
-          <div className="flex items-center gap-2 px-1">
-            <img src={project.logoUrl} alt="" className="h-6 w-6 rounded-md object-contain" />
-            <span className="text-[11px] text-muted-foreground/50 font-medium">Logo</span>
+      <div className="w-52 h-36 rounded-2xl overflow-hidden bg-muted/50 shrink-0 shadow-sm">
+        {project.imageUrl ? (
+          <img
+            src={project.imageUrl}
+            alt={project.name}
+            className="object-cover w-full h-full"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-blue-500/10 via-indigo-500/10 to-violet-500/10 flex items-center justify-center">
+            <span className="text-5xl font-semibold text-muted-foreground/25">
+              {project.name.charAt(0).toUpperCase()}
+            </span>
           </div>
         )}
       </div>
       <div className="flex-1 min-w-0 py-1">
         <div className="flex items-start justify-between gap-4">
-          <div>
+          <div className="flex items-center gap-3">
+            {project.logoUrl && (
+              <img src={project.logoUrl} alt="" className="h-9 w-9 rounded-xl object-contain shrink-0" />
+            )}
             <h1 className="text-[28px] font-semibold tracking-[-0.02em] text-foreground/95">
               {project.name}
             </h1>
