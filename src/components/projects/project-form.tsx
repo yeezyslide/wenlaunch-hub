@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PROJECT_STATUSES } from "@/lib/constants";
-import { Plus } from "lucide-react";
+import { Plus, Upload, X, ImageIcon } from "lucide-react";
 
 interface ProjectFormProps {
   project?: {
@@ -38,15 +38,63 @@ interface ProjectFormProps {
 
 export function ProjectForm({ project, trigger }: ProjectFormProps) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [name, setName] = useState(project?.name ?? "");
   const [description, setDescription] = useState(project?.description ?? "");
   const [imageUrl, setImageUrl] = useState(project?.imageUrl ?? "");
+  const [imagePreview, setImagePreview] = useState(project?.imageUrl ?? "");
   const [figmaLink, setFigmaLink] = useState(project?.figmaLink ?? "");
   const [status, setStatus] = useState(project?.status ?? "Active");
 
   const isEdit = !!project;
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image must be under 10MB");
+      return;
+    }
+
+    // Show local preview immediately
+    const localUrl = URL.createObjectURL(file);
+    setImagePreview(localUrl);
+    setUploading(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (res.ok) {
+      const { url } = await res.json();
+      setImageUrl(url);
+      setImagePreview(url);
+      toast.success("Image uploaded");
+    } else {
+      toast.error("Upload failed");
+      setImagePreview(imageUrl);
+    }
+    setUploading(false);
+  }
+
+  function removeImage() {
+    setImageUrl("");
+    setImagePreview("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -75,6 +123,7 @@ export function ProjectForm({ project, trigger }: ProjectFormProps) {
         setName("");
         setDescription("");
         setImageUrl("");
+        setImagePreview("");
         setFigmaLink("");
         setStatus("Active");
       }
@@ -123,12 +172,52 @@ export function ProjectForm({ project, trigger }: ProjectFormProps) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="project-image">Image URL</Label>
-            <Input
-              id="project-image"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://example.com/image.jpg"
+            <Label>Project Image</Label>
+            {imagePreview ? (
+              <div className="relative rounded-xl overflow-hidden border border-border/50 aspect-video bg-muted/30">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                />
+                {uploading && (
+                  <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
+                    <p className="text-[13px] font-medium text-muted-foreground">Uploading...</p>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="absolute top-2 right-2 h-7 w-7 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full rounded-xl border border-dashed border-border hover:border-muted-foreground/40 bg-muted/20 hover:bg-muted/40 transition-all duration-150 aspect-video flex flex-col items-center justify-center gap-2 cursor-pointer"
+              >
+                <div className="h-10 w-10 rounded-full bg-muted/60 flex items-center justify-center">
+                  <ImageIcon className="h-5 w-5 text-muted-foreground/60" />
+                </div>
+                <div className="text-center">
+                  <p className="text-[13px] font-medium text-muted-foreground/80">
+                    Click to upload
+                  </p>
+                  <p className="text-[11px] text-muted-foreground/50 mt-0.5">
+                    PNG, JPG, WebP up to 10MB
+                  </p>
+                </div>
+              </button>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
             />
           </div>
           <div className="space-y-2">
@@ -155,7 +244,7 @@ export function ProjectForm({ project, trigger }: ProjectFormProps) {
               </SelectContent>
             </Select>
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading || uploading}>
             {loading ? "Saving..." : isEdit ? "Update Project" : "Create Project"}
           </Button>
         </form>
