@@ -24,7 +24,7 @@ interface Task {
   dueDate: string | null;
   projectId: string;
   assigneeId: string | null;
-  assignee: { id: string; name: string; color: string } | null;
+  assignee: { id: string; name: string; color: string; avatarUrl: string | null } | null;
   project: { id: string; name: string };
 }
 
@@ -170,10 +170,14 @@ export function TaskTable({ tasks, projects, members }: TaskTableProps) {
                     {task.assignee ? (
                       <div className="flex items-center gap-1.5">
                         <div
-                          className="h-5 w-5 rounded-full flex items-center justify-center text-[10px] text-white font-medium"
-                          style={{ backgroundColor: task.assignee.color }}
+                          className="h-5 w-5 rounded-full flex items-center justify-center text-[10px] text-white font-medium overflow-hidden"
+                          style={{ backgroundColor: task.assignee.avatarUrl ? undefined : task.assignee.color }}
                         >
-                          {task.assignee.name.charAt(0).toUpperCase()}
+                          {task.assignee.avatarUrl ? (
+                            <img src={task.assignee.avatarUrl} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            task.assignee.name.charAt(0).toUpperCase()
+                          )}
                         </div>
                         <span className="text-sm">{task.assignee.name}</span>
                       </div>

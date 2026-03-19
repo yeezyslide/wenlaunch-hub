@@ -11,6 +11,7 @@ interface Member {
   name: string;
   email: string | null;
   color: string;
+  avatarUrl: string | null;
   _count: { tasks: number };
 }
 
@@ -45,15 +46,19 @@ export function MemberList({ members }: { members: Member[] }) {
           className="flex items-center gap-4 rounded-xl border border-border/50 bg-card p-4 transition-colors hover:bg-card/80"
         >
           <div
-            className="h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold text-[13px] shrink-0 shadow-sm"
-            style={{ backgroundColor: member.color }}
+            className="h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold text-[13px] shrink-0 shadow-sm overflow-hidden"
+            style={{ backgroundColor: member.avatarUrl ? undefined : member.color }}
           >
-            {member.name
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .toUpperCase()
-              .slice(0, 2)}
+            {member.avatarUrl ? (
+              <img src={member.avatarUrl} alt={member.name} className="w-full h-full object-cover" />
+            ) : (
+              member.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2)
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[14px] font-medium text-foreground/90">{member.name}</p>

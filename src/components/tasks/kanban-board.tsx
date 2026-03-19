@@ -25,7 +25,7 @@ interface Task {
   position: number;
   projectId: string;
   assigneeId: string | null;
-  assignee: { id: string; name: string; color: string } | null;
+  assignee: { id: string; name: string; color: string; avatarUrl: string | null } | null;
 }
 
 interface KanbanBoardProps {
@@ -146,12 +146,16 @@ export function KanbanBoard({ tasks: initialTasks, projectId, members }: KanbanB
                                 {task.assignee && (
                                   <div className="flex items-center gap-1.5">
                                     <div
-                                      className="h-[18px] w-[18px] rounded-full flex items-center justify-center text-[9px] text-white font-semibold"
+                                      className="h-[18px] w-[18px] rounded-full flex items-center justify-center text-[9px] text-white font-semibold overflow-hidden"
                                       style={{
-                                        backgroundColor: task.assignee.color,
+                                        backgroundColor: task.assignee.avatarUrl ? undefined : task.assignee.color,
                                       }}
                                     >
-                                      {task.assignee.name.charAt(0).toUpperCase()}
+                                      {task.assignee.avatarUrl ? (
+                                        <img src={task.assignee.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                      ) : (
+                                        task.assignee.name.charAt(0).toUpperCase()
+                                      )}
                                     </div>
                                     <span className="text-[11px] text-muted-foreground/60 font-medium">
                                       {task.assignee.name}

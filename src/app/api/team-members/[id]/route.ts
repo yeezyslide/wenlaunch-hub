@@ -6,6 +6,7 @@ const updateSchema = z.object({
   name: z.string().min(1).optional(),
   email: z.string().email().optional().or(z.literal("")),
   color: z.string().optional(),
+  avatarUrl: z.string().nullable().optional(),
 });
 
 export async function PUT(

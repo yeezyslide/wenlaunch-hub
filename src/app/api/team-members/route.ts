@@ -6,6 +6,7 @@ const createSchema = z.object({
   name: z.string().min(1),
   email: z.string().email().optional().or(z.literal("")),
   color: z.string().optional(),
+  avatarUrl: z.string().optional(),
 });
 
 export async function GET() {
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
       name: parsed.data.name,
       email: parsed.data.email || null,
       color: parsed.data.color,
+      avatarUrl: parsed.data.avatarUrl || null,
     },
   });
   return NextResponse.json(member, { status: 201 });

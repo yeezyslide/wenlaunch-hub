@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TASK_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
+import { TASK_STATUSES } from "@/lib/constants";
 
 interface TaskFiltersProps {
   projects: { id: string; name: string }[];
@@ -34,6 +34,7 @@ export function TaskFilters({ projects, members }: TaskFiltersProps) {
       <Select
         value={searchParams.get("projectId") ?? "all"}
         onValueChange={(v) => v && updateFilter("projectId", v)}
+        items={{ all: "All Projects", ...Object.fromEntries(projects.map((p) => [p.id, p.name])) }}
       >
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="All Projects" />
@@ -68,6 +69,7 @@ export function TaskFilters({ projects, members }: TaskFiltersProps) {
       <Select
         value={searchParams.get("assigneeId") ?? "all"}
         onValueChange={(v) => v && updateFilter("assigneeId", v)}
+        items={{ all: "All Assignees", ...Object.fromEntries(members.map((m) => [m.id, m.name])) }}
       >
         <SelectTrigger className="w-[160px]">
           <SelectValue placeholder="All Assignees" />

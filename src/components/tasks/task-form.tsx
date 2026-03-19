@@ -161,7 +161,11 @@ export function TaskForm({
           {!projectId && projects && (
             <div className="space-y-2">
               <Label>Project</Label>
-              <Select value={selectedProjectId} onValueChange={(v) => v && setSelectedProjectId(v)}>
+              <Select
+                value={selectedProjectId}
+                onValueChange={(v) => v && setSelectedProjectId(v)}
+                items={Object.fromEntries(projects.map((p) => [p.id, p.name]))}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select project" />
                 </SelectTrigger>
@@ -219,7 +223,11 @@ export function TaskForm({
             </div>
             <div className="space-y-2">
               <Label>Assignee</Label>
-              <Select value={assigneeId} onValueChange={(v) => v && setAssigneeId(v)}>
+              <Select
+                value={assigneeId}
+                onValueChange={(v) => v && setAssigneeId(v)}
+                items={{ none: "Unassigned", ...Object.fromEntries(members.map((m) => [m.id, m.name])) }}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Unassigned" />
                 </SelectTrigger>

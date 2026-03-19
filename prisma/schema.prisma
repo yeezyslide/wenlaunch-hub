@@ -45,6 +45,7 @@ model TeamMember {
   name      String
   email     String?
   color     String   @default("#6366f1")
+  avatarUrl String?
   createdAt DateTime @default(now())
   tasks     Task[]
 }
