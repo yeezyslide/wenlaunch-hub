@@ -7,6 +7,7 @@ const createSchema = z.object({
   description: z.string().optional(),
   imageUrl: z.string().url().optional().or(z.literal("")),
   figmaLink: z.string().url().optional().or(z.literal("")),
+  tags: z.string().optional(),
   status: z.string().optional(),
 });
 
@@ -30,6 +31,7 @@ export async function POST(request: Request) {
       description: parsed.data.description || null,
       imageUrl: parsed.data.imageUrl || null,
       figmaLink: parsed.data.figmaLink || null,
+      tags: parsed.data.tags || "",
       status: parsed.data.status,
     },
   });

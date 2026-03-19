@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { STATUS_COLORS } from "@/lib/constants";
+import { STATUS_COLORS, TAG_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 interface ProjectCardProps {
@@ -10,11 +10,14 @@ interface ProjectCardProps {
     description: string | null;
     imageUrl: string | null;
     status: string;
+    tags: string;
     _count: { tasks: number };
   };
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
+  const tags = project.tags ? project.tags.split(",").filter(Boolean) : [];
+
   return (
     <Link href={`/projects/${project.id}`}>
       <div className="group rounded-2xl border border-border/60 bg-card overflow-hidden transition-all duration-200 hover:shadow-lg hover:shadow-black/5 hover:border-border hover:-translate-y-0.5">
@@ -53,7 +56,22 @@ export function ProjectCard({ project }: ProjectCardProps) {
               {project.description}
             </p>
           )}
-          <p className="text-[12px] text-muted-foreground/70 mt-4 font-medium">
+          {tags.length > 0 && (
+            <div className="flex gap-1.5 flex-wrap mt-3">
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className={cn(
+                    "text-[10px] font-medium px-2 py-0.5 rounded-full border",
+                    TAG_COLORS[tag] ?? "bg-muted text-muted-foreground border-border"
+                  )}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+          <p className="text-[12px] text-muted-foreground/70 mt-3 font-medium">
             {project._count.tasks} task{project._count.tasks !== 1 ? "s" : ""}
           </p>
         </div>

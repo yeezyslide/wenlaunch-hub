@@ -21,7 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PROJECT_STATUSES } from "@/lib/constants";
+import { PROJECT_STATUSES, PROJECT_TAGS, TAG_COLORS } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import { Plus, Upload, X, ImageIcon } from "lucide-react";
 
 interface ProjectFormProps {
@@ -32,6 +33,7 @@ interface ProjectFormProps {
     imageUrl: string | null;
     figmaLink: string | null;
     status: string;
+    tags: string;
   };
   trigger?: React.ReactElement;
 }
@@ -48,6 +50,9 @@ export function ProjectForm({ project, trigger }: ProjectFormProps) {
   const [imagePreview, setImagePreview] = useState(project?.imageUrl ?? "");
   const [figmaLink, setFigmaLink] = useState(project?.figmaLink ?? "");
   const [status, setStatus] = useState(project?.status ?? "Active");
+  const [tags, setTags] = useState<string[]>(
+    project?.tags ? project.tags.split(",").filter(Boolean) : []
+  );
 
   const isEdit = !!project;
 
@@ -112,6 +117,7 @@ export function ProjectForm({ project, trigger }: ProjectFormProps) {
         description: description.trim(),
         imageUrl: imageUrl.trim(),
         figmaLink: figmaLink.trim(),
+        tags: tags.join(","),
         status,
       }),
     });
@@ -125,6 +131,7 @@ export function ProjectForm({ project, trigger }: ProjectFormProps) {
         setImageUrl("");
         setImagePreview("");
         setFigmaLink("");
+        setTags([]);
         setStatus("Active");
       }
       router.refresh();
@@ -219,6 +226,35 @@ export function ProjectForm({ project, trigger }: ProjectFormProps) {
               onChange={handleFileUpload}
               className="hidden"
             />
+          </div>
+          <div className="space-y-2">
+            <Label>Tags</Label>
+            <div className="flex gap-2 flex-wrap">
+              {PROJECT_TAGS.map((tag) => {
+                const selected = tags.includes(tag);
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() =>
+                      setTags(
+                        selected
+                          ? tags.filter((t) => t !== tag)
+                          : [...tags, tag]
+                      )
+                    }
+                    className={cn(
+                      "text-[12px] font-medium px-3 py-1.5 rounded-full border transition-all duration-150",
+                      selected
+                        ? TAG_COLORS[tag]
+                        : "bg-muted/30 text-muted-foreground border-border/50 hover:bg-muted/60"
+                    )}
+                  >
+                    {tag}
+                  </button>
+                );
+              })}
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="project-figma">Figma Link</Label>

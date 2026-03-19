@@ -16,7 +16,8 @@ export function Sidebar() {
 
   return (
     <aside className="w-[260px] border-r border-border/50 bg-sidebar backdrop-blur-xl flex flex-col">
-      <div className="px-6 pt-8 pb-6">
+      <div className="px-6 pt-8 pb-6 flex items-center gap-2.5">
+        <img src="/icon.svg" alt="WenLaunch" className="h-7 w-7 rounded-lg" />
         <h1 className="text-[15px] font-semibold tracking-[-0.01em] text-foreground/90">
           WenLaunch Hub
         </h1>

@@ -7,6 +7,7 @@ const updateSchema = z.object({
   description: z.string().optional(),
   imageUrl: z.string().url().optional().or(z.literal("")),
   figmaLink: z.string().url().optional().or(z.literal("")),
+  tags: z.string().optional(),
   status: z.string().optional(),
   transcripts: z.string().optional(),
 });

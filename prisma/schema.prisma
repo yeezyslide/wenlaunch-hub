@@ -14,6 +14,7 @@ model Project {
   description String?
   imageUrl    String?
   status      String   @default("Active")
+  tags        String   @default("")
   figmaLink   String?
   transcripts String?
   createdAt   DateTime @default(now())

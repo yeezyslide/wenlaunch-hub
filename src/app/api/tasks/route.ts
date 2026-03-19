@@ -9,7 +9,7 @@ const createSchema = z.object({
   priority: z.string().optional(),
   dueDate: z.string().optional(),
   projectId: z.string().min(1),
-  assigneeId: z.string().optional(),
+  assigneeId: z.string().nullable().optional(),
 });
 
 export async function GET(request: NextRequest) {
