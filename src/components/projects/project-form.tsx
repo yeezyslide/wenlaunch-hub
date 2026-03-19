@@ -94,7 +94,8 @@ export function ProjectForm({ project, trigger }: ProjectFormProps) {
       setImagePreview(url);
       toast.success("Image uploaded");
     } else {
-      toast.error("Upload failed");
+      const data = await res.json().catch(() => ({}));
+      toast.error(data.error || "Upload failed");
       setImagePreview(imageUrl);
     }
     setUploading(false);
@@ -123,7 +124,8 @@ export function ProjectForm({ project, trigger }: ProjectFormProps) {
       setLogoUrl(url);
       setLogoPreview(url);
     } else {
-      toast.error("Upload failed");
+      const data = await res.json().catch(() => ({}));
+      toast.error(data.error || "Upload failed");
       setLogoPreview(logoUrl);
     }
     setUploadingLogo(false);

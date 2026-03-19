@@ -64,7 +64,8 @@ export function MemberForm({ member, trigger }: MemberFormProps) {
       setAvatarUrl(url);
       setAvatarPreview(url);
     } else {
-      toast.error("Upload failed");
+      const data = await res.json().catch(() => ({}));
+      toast.error(data.error || "Upload failed");
       setAvatarPreview(avatarUrl);
     }
     setUploading(false);
