@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import Link from "next/link";
+import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   DragDropContext,
@@ -39,6 +38,7 @@ interface AllTasksKanbanProps {
 export function AllTasksKanban({ tasks: initialTasks, projects, members }: AllTasksKanbanProps) {
   const router = useRouter();
   const [tasks, setTasks] = useState(initialTasks);
+  const mouseDownPos = useRef<{ x: number; y: number } | null>(null);
 
   const columns = TASK_STATUSES.map((status) => ({
     id: status,
@@ -103,9 +103,21 @@ export function AllTasksKanban({ tasks: initialTasks, projects, members }: AllTa
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
+                          onMouseDown={(e) => {
+                            mouseDownPos.current = { x: e.clientX, y: e.clientY };
+                          }}
+                          onClick={(e) => {
+                            if (!mouseDownPos.current) return;
+                            const dx = Math.abs(e.clientX - mouseDownPos.current.x);
+                            const dy = Math.abs(e.clientY - mouseDownPos.current.y);
+                            if (dx < 5 && dy < 5) {
+                              router.push(`/tasks/${task.id}`);
+                            }
+                            mouseDownPos.current = null;
+                          }}
                           className={cn(
-                            "rounded-xl border border-border/50 bg-card p-3.5 transition-all duration-150 group/card cursor-grab active:cursor-grabbing relative",
-                            snapshot.isDragging && "shadow-xl shadow-black/10 rotate-[1deg] scale-[1.02]"
+                            "rounded-xl border border-border/50 bg-card p-3.5 transition-all duration-150 group/card cursor-pointer relative",
+                            snapshot.isDragging && "shadow-xl shadow-black/10 rotate-[1deg] scale-[1.02] cursor-grabbing"
                           )}
                         >
                           <TaskForm
@@ -116,19 +128,16 @@ export function AllTasksKanban({ tasks: initialTasks, projects, members }: AllTa
                               <button
                                 className="absolute top-2.5 right-2.5 h-6 w-6 rounded-md bg-muted/60 hover:bg-muted flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity z-10"
                                 onMouseDown={(e) => e.stopPropagation()}
+                                onClick={(e) => e.stopPropagation()}
                               >
                                 <Pencil className="h-3 w-3 text-muted-foreground" />
                               </button>
                             }
                           />
                           <div className="space-y-2">
-                            <Link
-                              href={`/tasks/${task.id}`}
-                              className="text-[13px] font-medium leading-snug text-foreground/90 pr-6 hover:text-foreground block"
-                              onMouseDown={(e) => e.stopPropagation()}
-                            >
+                            <p className="text-[13px] font-medium leading-snug text-foreground/90 pr-6">
                               {task.title}
-                            </Link>
+                            </p>
                             <p className="text-[11px] text-muted-foreground/50 font-medium">
                               {task.project.name}
                             </p>
