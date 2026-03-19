@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   DragDropContext,
@@ -13,7 +14,7 @@ import { TASK_STATUSES, PRIORITY_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { TaskForm } from "./task-form";
 import { format } from "date-fns";
-import { Calendar, CheckSquare, Pencil } from "lucide-react";
+import { Calendar, Pencil } from "lucide-react";
 
 interface Task {
   id: string;
@@ -121,9 +122,13 @@ export function AllTasksKanban({ tasks: initialTasks, projects, members }: AllTa
                             }
                           />
                           <div className="space-y-2">
-                            <p className="text-[13px] font-medium leading-snug text-foreground/90 pr-6">
+                            <Link
+                              href={`/tasks/${task.id}`}
+                              className="text-[13px] font-medium leading-snug text-foreground/90 pr-6 hover:text-foreground block"
+                              onMouseDown={(e) => e.stopPropagation()}
+                            >
                               {task.title}
-                            </p>
+                            </Link>
                             <p className="text-[11px] text-muted-foreground/50 font-medium">
                               {task.project.name}
                             </p>

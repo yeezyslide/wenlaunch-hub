@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -22,8 +22,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TASK_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
-import { TaskChecklist } from "./task-checklist";
-import { Separator } from "@/components/ui/separator";
 import { Plus, Trash2 } from "lucide-react";
 
 interface TaskFormProps {
@@ -64,23 +62,7 @@ export function TaskForm({
   const [selectedProjectId, setSelectedProjectId] = useState(
     task?.projectId ?? projectId ?? ""
   );
-  const [checklistItems, setChecklistItems] = useState<
-    { id: string; text: string; completed: boolean; position: number }[]
-  >([]);
-  const [checklistLoaded, setChecklistLoaded] = useState(false);
-
   const isEdit = !!task;
-
-  useEffect(() => {
-    if (open && isEdit && !checklistLoaded) {
-      fetch(`/api/tasks/${task.id}/checklist`)
-        .then((r) => r.json())
-        .then((data) => {
-          setChecklistItems(data);
-          setChecklistLoaded(true);
-        });
-    }
-  }, [open, isEdit, checklistLoaded, task?.id]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -259,21 +241,6 @@ export function TaskForm({
               </Select>
             </div>
           </div>
-          {isEdit && (
-            <>
-              <Separator className="opacity-50" />
-              <TaskChecklist
-                taskId={task.id}
-                items={checklistItems}
-                onUpdate={() => {
-                  fetch(`/api/tasks/${task.id}/checklist`)
-                    .then((r) => r.json())
-                    .then(setChecklistItems);
-                  router.refresh();
-                }}
-              />
-            </>
-          )}
           <div className="flex gap-2">
             <Button type="submit" className="flex-1" disabled={loading}>
               {loading ? "Saving..." : isEdit ? "Update Task" : "Create Task"}

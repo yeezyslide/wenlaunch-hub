@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   DragDropContext,
@@ -13,7 +14,7 @@ import { TASK_STATUSES, PRIORITY_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { TaskForm } from "./task-form";
 import { format } from "date-fns";
-import { Calendar, CheckSquare, Pencil } from "lucide-react";
+import { Calendar, Pencil, ExternalLink } from "lucide-react";
 
 interface Task {
   id: string;
@@ -26,7 +27,6 @@ interface Task {
   projectId: string;
   assigneeId: string | null;
   assignee: { id: string; name: string; color: string; avatarUrl: string | null } | null;
-  checklist?: { id: string; completed: boolean }[];
 }
 
 interface KanbanBoardProps {
@@ -129,9 +129,13 @@ export function KanbanBoard({ tasks: initialTasks, projectId, members }: KanbanB
                             }
                           />
                           <div className="space-y-2.5">
-                            <p className="text-[13px] font-medium leading-snug text-foreground/90 pr-6">
+                            <Link
+                              href={`/tasks/${task.id}`}
+                              className="text-[13px] font-medium leading-snug text-foreground/90 pr-6 hover:text-foreground block"
+                              onMouseDown={(e) => e.stopPropagation()}
+                            >
                               {task.title}
-                            </p>
+                            </Link>
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <Badge
                                 variant="secondary"
@@ -142,12 +146,6 @@ export function KanbanBoard({ tasks: initialTasks, projectId, members }: KanbanB
                               >
                                 {task.priority}
                               </Badge>
-                              {task.checklist && task.checklist.length > 0 && (
-                                <span className="text-[11px] text-muted-foreground/70 flex items-center gap-1">
-                                  <CheckSquare className="h-3 w-3" />
-                                  {task.checklist.filter((c) => c.completed).length}/{task.checklist.length}
-                                </span>
-                              )}
                               {task.dueDate && (
                                 <span className="text-[11px] text-muted-foreground/70 flex items-center gap-1">
                                   <Calendar className="h-3 w-3" />
