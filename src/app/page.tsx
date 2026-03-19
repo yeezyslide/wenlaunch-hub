@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { ProjectCard } from "@/components/projects/project-card";
 import { ProjectForm } from "@/components/projects/project-form";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const projects = await prisma.project.findMany({
     include: { _count: { select: { tasks: true } } },
