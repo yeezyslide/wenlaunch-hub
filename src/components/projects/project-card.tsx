@@ -21,8 +21,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
   return (
     <Link href={`/projects/${project.id}`}>
-      <div className="group rounded-2xl border border-border/60 bg-card overflow-hidden transition-all duration-200 hover:shadow-lg hover:shadow-black/5 hover:border-border hover:-translate-y-0.5">
-        <div className="aspect-[16/10] bg-muted/50 relative overflow-hidden">
+      <div className="group rounded-xl border border-border/60 bg-card overflow-hidden transition-all duration-200 hover:shadow-md hover:shadow-black/5 hover:border-border hover:-translate-y-0.5">
+        <div className="aspect-[2/1] bg-muted/50 relative overflow-hidden">
           {project.imageUrl ? (
             <img
               src={project.imageUrl}
@@ -31,40 +31,35 @@ export function ProjectCard({ project }: ProjectCardProps) {
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-blue-500/10 via-indigo-500/10 to-violet-500/10 flex items-center justify-center">
-              <span className="text-4xl font-semibold text-muted-foreground/25">
+              <span className="text-3xl font-semibold text-muted-foreground/20">
                 {project.name.charAt(0).toUpperCase()}
               </span>
             </div>
           )}
         </div>
-        <div className="p-5">
-          <div className="flex items-start justify-between gap-3">
-            <h3 className="text-[15px] font-semibold tracking-[-0.01em] text-foreground/90 group-hover:text-foreground transition-colors">
+        <div className="p-3.5">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="text-[13px] font-semibold tracking-[-0.01em] text-foreground/90 group-hover:text-foreground transition-colors truncate">
               {project.name}
             </h3>
             <Badge
               variant="secondary"
               className={cn(
-                "shrink-0 text-[11px] font-medium rounded-full px-2.5 py-0.5",
+                "shrink-0 text-[10px] font-medium rounded-full px-2 py-0",
                 STATUS_COLORS[project.status]
               )}
             >
               {project.status}
             </Badge>
           </div>
-          {project.description && (
-            <p className="text-[13px] text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
-              {project.description}
-            </p>
-          )}
           {tags.length > 0 && (
-            <div className="flex gap-1.5 flex-wrap mt-3">
+            <div className="flex gap-1 flex-wrap mt-2">
               {tags.map((tag) => (
                 <TagBadge key={tag} tag={tag} />
               ))}
             </div>
           )}
-          <p className="text-[12px] text-muted-foreground/70 mt-3 font-medium">
+          <p className="text-[11px] text-muted-foreground/50 mt-2 font-medium">
             {project._count.tasks} task{project._count.tasks !== 1 ? "s" : ""}
           </p>
         </div>

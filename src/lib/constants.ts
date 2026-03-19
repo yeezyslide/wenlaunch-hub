@@ -17,6 +17,13 @@ export const PROJECT_STATUSES = [
 
 export const TASK_STATUSES = ["To Do", "In Progress", "In Review", "Done"] as const;
 
+export const TASK_STATUS_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
+  "To Do": { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400" },
+  "In Progress": { bg: "bg-blue-50", text: "text-blue-600", dot: "bg-blue-500" },
+  "In Review": { bg: "bg-amber-50", text: "text-amber-600", dot: "bg-amber-500" },
+  Done: { bg: "bg-emerald-50", text: "text-emerald-600", dot: "bg-emerald-500" },
+};
+
 export const TASK_PRIORITIES = ["Low", "Medium", "High", "Urgent"] as const;
 
 export const PRIORITY_COLORS: Record<string, string> = {

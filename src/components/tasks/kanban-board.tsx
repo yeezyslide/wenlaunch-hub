@@ -9,7 +9,7 @@ import {
   type DropResult,
 } from "@hello-pangea/dnd";
 import { Badge } from "@/components/ui/badge";
-import { TASK_STATUSES, PRIORITY_COLORS } from "@/lib/constants";
+import { TASK_STATUSES, TASK_STATUS_COLORS, PRIORITY_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { TaskForm } from "./task-form";
 import { format } from "date-fns";
@@ -86,7 +86,8 @@ export function KanbanBoard({ tasks: initialTasks, projectId, members }: KanbanB
         {columns.map((column) => (
           <div key={column.id} className="flex flex-col">
             <div className="flex items-center gap-2 mb-3 px-1">
-              <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+              <div className={cn("h-2 w-2 rounded-full", TASK_STATUS_COLORS[column.id]?.dot)} />
+              <h3 className={cn("text-[12px] font-semibold uppercase tracking-wider", TASK_STATUS_COLORS[column.id]?.text ?? "text-muted-foreground/70")}>
                 {column.title}
               </h3>
               <span className="text-[11px] font-medium text-muted-foreground/40 bg-muted/50 rounded-full px-1.5 py-0.5 min-w-[20px] text-center">

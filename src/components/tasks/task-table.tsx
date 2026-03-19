@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PRIORITY_COLORS } from "@/lib/constants";
+import { PRIORITY_COLORS, TASK_STATUS_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { format, isPast, isToday } from "date-fns";
 
@@ -138,7 +138,8 @@ export function TaskTable({ tasks, projects, members }: TaskTableProps) {
                     {task.project.name}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="secondary" className={cn("text-xs", TASK_STATUS_COLORS[task.status]?.bg, TASK_STATUS_COLORS[task.status]?.text)}>
+                      <div className={cn("h-1.5 w-1.5 rounded-full mr-1", TASK_STATUS_COLORS[task.status]?.dot)} />
                       {task.status}
                     </Badge>
                   </TableCell>
