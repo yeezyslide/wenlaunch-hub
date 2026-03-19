@@ -13,7 +13,7 @@ import { TASK_STATUSES, PRIORITY_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { TaskForm } from "./task-form";
 import { format } from "date-fns";
-import { Calendar, CheckSquare } from "lucide-react";
+import { Calendar, CheckSquare, Pencil } from "lucide-react";
 
 interface Task {
   id: string;
@@ -103,7 +103,7 @@ export function AllTasksKanban({ tasks: initialTasks, projects, members }: AllTa
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
                           className={cn(
-                            "rounded-xl border border-border/50 bg-card p-3.5 transition-all duration-150",
+                            "rounded-xl border border-border/50 bg-card p-3.5 transition-all duration-150 group/card cursor-grab active:cursor-grabbing relative",
                             snapshot.isDragging && "shadow-xl shadow-black/10 rotate-[1deg] scale-[1.02]"
                           )}
                         >
@@ -112,52 +112,56 @@ export function AllTasksKanban({ tasks: initialTasks, projects, members }: AllTa
                             members={members}
                             task={{ ...task, dueDate: task.dueDate }}
                             trigger={
-                              <button className="w-full text-left space-y-2">
-                                <p className="text-[13px] font-medium leading-snug text-foreground/90">
-                                  {task.title}
-                                </p>
-                                <p className="text-[11px] text-muted-foreground/50 font-medium">
-                                  {task.project.name}
-                                </p>
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <Badge
-                                    variant="secondary"
-                                    className={cn(
-                                      "text-[10px] font-medium rounded-full px-2 py-0",
-                                      PRIORITY_COLORS[task.priority]
-                                    )}
-                                  >
-                                    {task.priority}
-                                  </Badge>
-                                  {task.dueDate && (
-                                    <span className="text-[11px] text-muted-foreground/70 flex items-center gap-1">
-                                      <Calendar className="h-3 w-3" />
-                                      {format(new Date(task.dueDate), "MMM d")}
-                                    </span>
-                                  )}
-                                </div>
-                                {task.assignee && (
-                                  <div className="flex items-center gap-1.5">
-                                    <div
-                                      className="h-[18px] w-[18px] rounded-full flex items-center justify-center text-[9px] text-white font-semibold overflow-hidden"
-                                      style={{
-                                        backgroundColor: task.assignee.avatarUrl ? undefined : task.assignee.color,
-                                      }}
-                                    >
-                                      {task.assignee.avatarUrl ? (
-                                        <img src={task.assignee.avatarUrl} alt="" className="w-full h-full object-cover" />
-                                      ) : (
-                                        task.assignee.name.charAt(0).toUpperCase()
-                                      )}
-                                    </div>
-                                    <span className="text-[11px] text-muted-foreground/60 font-medium">
-                                      {task.assignee.name}
-                                    </span>
-                                  </div>
-                                )}
+                              <button
+                                className="absolute top-2.5 right-2.5 h-6 w-6 rounded-md bg-muted/60 hover:bg-muted flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity z-10"
+                                onMouseDown={(e) => e.stopPropagation()}
+                              >
+                                <Pencil className="h-3 w-3 text-muted-foreground" />
                               </button>
                             }
                           />
+                          <div className="space-y-2">
+                            <p className="text-[13px] font-medium leading-snug text-foreground/90 pr-6">
+                              {task.title}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground/50 font-medium">
+                              {task.project.name}
+                            </p>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <Badge
+                                variant="secondary"
+                                className={cn(
+                                  "text-[10px] font-medium rounded-full px-2 py-0",
+                                  PRIORITY_COLORS[task.priority]
+                                )}
+                              >
+                                {task.priority}
+                              </Badge>
+                              {task.dueDate && (
+                                <span className="text-[11px] text-muted-foreground/70 flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  {format(new Date(task.dueDate), "MMM d")}
+                                </span>
+                              )}
+                            </div>
+                            {task.assignee && (
+                              <div className="flex items-center gap-1.5">
+                                <div
+                                  className="h-[18px] w-[18px] rounded-full flex items-center justify-center text-[9px] text-white font-semibold overflow-hidden"
+                                  style={{ backgroundColor: task.assignee.avatarUrl ? undefined : task.assignee.color }}
+                                >
+                                  {task.assignee.avatarUrl ? (
+                                    <img src={task.assignee.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                  ) : (
+                                    task.assignee.name.charAt(0).toUpperCase()
+                                  )}
+                                </div>
+                                <span className="text-[11px] text-muted-foreground/60 font-medium">
+                                  {task.assignee.name}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
                     </Draggable>
