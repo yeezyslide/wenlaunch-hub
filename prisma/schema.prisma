@@ -41,6 +41,28 @@ model Task {
   assignee   TeamMember? @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
 }
 
+model ResourceFolder {
+  id        String             @id @default(cuid())
+  name      String
+  icon      String?
+  position  Int                @default(0)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  documents ResourceDocument[]
+}
+
+model ResourceDocument {
+  id        String         @id @default(cuid())
+  title     String
+  content   String?
+  position  Int            @default(0)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  folderId String
+  folder   ResourceFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+}
+
 model TeamMember {
   id        String   @id @default(cuid())
   name      String
