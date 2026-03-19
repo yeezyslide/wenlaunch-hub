@@ -63,6 +63,14 @@ model ResourceDocument {
   folder   ResourceFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
 }
 
+model AdminTask {
+  id        String   @id @default(cuid())
+  text      String
+  completed Boolean  @default(false)
+  priority  String   @default("Medium")
+  createdAt DateTime @default(now())
+}
+
 model TeamMember {
   id        String   @id @default(cuid())
   name      String
