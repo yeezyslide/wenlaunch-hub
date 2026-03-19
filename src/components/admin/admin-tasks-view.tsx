@@ -1,57 +1,88 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useCallback, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  type DropResult,
+} from "@hello-pangea/dnd";
 import { Badge } from "@/components/ui/badge";
-import { PRIORITY_COLORS, TASK_PRIORITIES } from "@/lib/constants";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { TASK_STATUSES, TASK_STATUS_COLORS, PRIORITY_COLORS, TASK_PRIORITIES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { Plus, X, Check, Trash2 } from "lucide-react";
+import { Plus, Trash2, Check, Pencil, LayoutList, Columns3 } from "lucide-react";
 
 interface AdminTask {
   id: string;
-  text: string;
-  completed: boolean;
+  title: string;
+  description: string | null;
+  status: string;
   priority: string;
+  position: number;
   createdAt: string;
 }
 
 export function AdminTasksView({ tasks: initialTasks }: { tasks: AdminTask[] }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const view = searchParams.get("view") ?? "kanban";
   const [tasks, setTasks] = useState(initialTasks);
-  const [newText, setNewText] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
   const [newPriority, setNewPriority] = useState("Medium");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [editTask, setEditTask] = useState<AdminTask | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDesc, setEditDesc] = useState("");
+  const mouseDownPos = useRef<{ x: number; y: number } | null>(null);
 
-  const pending = tasks.filter((t) => !t.completed);
-  const completed = tasks.filter((t) => t.completed);
+  function setView(v: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("view", v);
+    router.push(`/admin-tasks?${params.toString()}`);
+  }
 
   async function addTask() {
-    if (!newText.trim()) return;
+    if (!newTitle.trim()) return;
     const res = await fetch("/api/admin-tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: newText.trim(), priority: newPriority }),
+      body: JSON.stringify({ title: newTitle.trim(), priority: newPriority }),
     });
     if (res.ok) {
       const task = await res.json();
-      setTasks([task, ...tasks]);
-      setNewText("");
+      setTasks([...tasks, { ...task, createdAt: task.createdAt }]);
+      setNewTitle("");
       setNewPriority("Medium");
-      inputRef.current?.focus();
+      setAddOpen(false);
+      toast.success("Task added");
     }
   }
 
-  async function toggleTask(id: string) {
-    const task = tasks.find((t) => t.id === id);
-    if (!task) return;
-    const newCompleted = !task.completed;
-    setTasks(tasks.map((t) => (t.id === id ? { ...t, completed: newCompleted } : t)));
+  async function updateTask(id: string, data: Partial<AdminTask>) {
+    setTasks(tasks.map((t) => (t.id === id ? { ...t, ...data } : t)));
     await fetch(`/api/admin-tasks/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ completed: newCompleted }),
+      body: JSON.stringify(data),
     });
   }
 
@@ -61,128 +92,276 @@ export function AdminTasksView({ tasks: initialTasks }: { tasks: AdminTask[] }) 
     toast.success("Task deleted");
   }
 
-  async function updateText(id: string, text: string) {
-    if (!text.trim()) return;
-    setTasks(tasks.map((t) => (t.id === id ? { ...t, text } : t)));
-    await fetch(`/api/admin-tasks/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: text.trim() }),
-    });
+  async function markDone(id: string) {
+    updateTask(id, { status: "Done" });
   }
 
+  function openEdit(task: AdminTask) {
+    setEditTask(task);
+    setEditTitle(task.title);
+    setEditDesc(task.description ?? "");
+  }
+
+  async function saveEdit() {
+    if (!editTask || !editTitle.trim()) return;
+    updateTask(editTask.id, { title: editTitle.trim(), description: editDesc.trim() || null });
+    setEditTask(null);
+  }
+
+  const handleDragEnd = useCallback(
+    async (result: DropResult) => {
+      const { draggableId, destination } = result;
+      if (!destination) return;
+      const newStatus = destination.droppableId;
+      setTasks(tasks.map((t) =>
+        t.id === draggableId ? { ...t, status: newStatus, position: destination.index } : t
+      ));
+      await fetch(`/api/admin-tasks/${draggableId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus, position: destination.index }),
+      });
+    },
+    [tasks]
+  );
+
+  const columns = TASK_STATUSES.map((status) => ({
+    id: status,
+    tasks: tasks.filter((t) => t.status === status).sort((a, b) => a.position - b.position),
+  }));
+
   return (
-    <div className="max-w-2xl">
-      {/* Add task */}
-      <div className="flex items-center gap-2 mb-6">
-        <Input
-          ref={inputRef}
-          value={newText}
-          onChange={(e) => setNewText(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") addTask(); }}
-          placeholder="Add a task..."
-          className="flex-1 h-10 text-[14px]"
-        />
-        <div className="flex items-center gap-1 shrink-0">
-          {TASK_PRIORITIES.map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setNewPriority(p)}
-              className={cn(
-                "text-[10px] font-medium px-2 py-1 rounded-full border transition-all",
-                newPriority === p
-                  ? PRIORITY_COLORS[p] + " border-current/20"
-                  : "text-muted-foreground/40 border-transparent hover:text-muted-foreground"
-              )}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
-        <button
-          onClick={addTask}
-          disabled={!newText.trim()}
-          className="h-10 w-10 rounded-xl bg-foreground text-background flex items-center justify-center hover:bg-foreground/90 disabled:opacity-30 transition-all shrink-0"
-        >
-          <Plus className="h-4 w-4" />
-        </button>
-      </div>
-
-      {/* Pending tasks */}
-      {pending.length === 0 && completed.length === 0 && (
-        <div className="text-center py-16 text-muted-foreground/40">
-          <p className="text-[15px] font-medium mb-1">No tasks yet</p>
-          <p className="text-[13px]">Add your first admin task above.</p>
-        </div>
-      )}
-
-      <div className="space-y-1">
-        {pending.map((task) => (
-          <div
-            key={task.id}
-            className="flex items-center gap-3 group rounded-xl px-3 py-2.5 hover:bg-muted/20 transition-colors"
+    <div>
+      {/* Controls */}
+      <div className="flex items-center gap-3 mb-5">
+        <Dialog open={addOpen} onOpenChange={setAddOpen}>
+          <DialogTrigger render={
+            <Button size="sm">
+              <Plus className="h-3.5 w-3.5 mr-1.5" />
+              Add Task
+            </Button>
+          } />
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>New Admin Task</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Input
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder="Task title"
+                onKeyDown={(e) => { if (e.key === "Enter") addTask(); }}
+                autoFocus
+              />
+              <div className="flex gap-1.5">
+                {TASK_PRIORITIES.map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setNewPriority(p)}
+                    className={cn(
+                      "text-[11px] font-medium px-2.5 py-1 rounded-full border transition-all",
+                      newPriority === p
+                        ? PRIORITY_COLORS[p] + " border-current/20"
+                        : "text-muted-foreground/40 border-border/50 hover:text-muted-foreground"
+                    )}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+              <Button onClick={addTask} className="w-full" disabled={!newTitle.trim()}>
+                Add Task
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        <div className="flex-1" />
+        <div className="flex items-center rounded-lg border border-border/50 p-0.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn("h-7 w-7 rounded-md", view === "kanban" && "bg-accent shadow-sm")}
+            onClick={() => setView("kanban")}
           >
-            <button
-              onClick={() => toggleTask(task.id)}
-              className="h-5 w-5 rounded-md border-2 border-border/60 hover:border-blue-400 flex items-center justify-center shrink-0 transition-all"
-            >
-            </button>
-            <input
-              type="text"
-              defaultValue={task.text}
-              key={task.id + task.text}
-              onBlur={(e) => updateText(task.id, e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
-              className="flex-1 bg-transparent text-[14px] outline-none"
-            />
-            <Badge
-              variant="secondary"
-              className={cn("text-[10px] rounded-full px-2 py-0", PRIORITY_COLORS[task.priority])}
-            >
-              {task.priority}
-            </Badge>
-            <button
-              onClick={() => deleteTask(task.id)}
-              className="opacity-0 group-hover:opacity-100 text-muted-foreground/30 hover:text-destructive transition-all"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        ))}
+            <Columns3 className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn("h-7 w-7 rounded-md", view === "table" && "bg-accent shadow-sm")}
+            onClick={() => setView("table")}
+          >
+            <LayoutList className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
 
-      {/* Completed */}
-      {completed.length > 0 && (
-        <div className="mt-6">
-          <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/40 mb-2 px-3">
-            Completed ({completed.length})
-          </p>
-          <div className="space-y-0.5">
-            {completed.map((task) => (
-              <div
-                key={task.id}
-                className="flex items-center gap-3 group rounded-xl px-3 py-2 hover:bg-muted/20 transition-colors"
-              >
-                <button
-                  onClick={() => toggleTask(task.id)}
-                  className="h-5 w-5 rounded-md bg-emerald-500 border-2 border-emerald-500 flex items-center justify-center shrink-0"
-                >
-                  <Check className="h-3 w-3 text-white" />
-                </button>
-                <span className="flex-1 text-[14px] text-muted-foreground/40 line-through">
-                  {task.text}
-                </span>
-                <button
-                  onClick={() => deleteTask(task.id)}
-                  className="opacity-0 group-hover:opacity-100 text-muted-foreground/30 hover:text-destructive transition-all"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
+      {/* Edit dialog */}
+      <Dialog open={!!editTask} onOpenChange={(open) => !open && setEditTask(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Task</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              placeholder="Task title"
+            />
+            <textarea
+              value={editDesc}
+              onChange={(e) => setEditDesc(e.target.value)}
+              placeholder="Add notes or details..."
+              rows={5}
+              className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-[13px] outline-none focus:border-ring transition-colors resize-none"
+            />
+            <div className="flex gap-2">
+              <Button onClick={saveEdit} className="flex-1">Save</Button>
+              {editTask && (
+                <Button variant="destructive" onClick={() => { deleteTask(editTask.id); setEditTask(null); }}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Kanban View */}
+      {view === "kanban" ? (
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <div className="grid grid-cols-4 gap-3">
+            {columns.map((column) => (
+              <div key={column.id} className="flex flex-col">
+                <div className="flex items-center gap-2 mb-3 px-1">
+                  <div className={cn("h-2 w-2 rounded-full", TASK_STATUS_COLORS[column.id]?.dot)} />
+                  <h3 className={cn("text-[12px] font-semibold uppercase tracking-wider", TASK_STATUS_COLORS[column.id]?.text)}>
+                    {column.id}
+                  </h3>
+                  <span className="text-[11px] font-medium text-muted-foreground/40 bg-muted/50 rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
+                    {column.tasks.length}
+                  </span>
+                </div>
+                <Droppable droppableId={column.id}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className={cn(
+                        "flex-1 rounded-xl bg-muted/30 p-1.5 space-y-1.5 min-h-[200px] transition-colors duration-150",
+                        snapshot.isDraggingOver && "bg-accent/40"
+                      )}
+                    >
+                      {column.tasks.map((task, index) => (
+                        <Draggable key={task.id} draggableId={task.id} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              onMouseDown={(e) => { mouseDownPos.current = { x: e.clientX, y: e.clientY }; }}
+                              onClick={(e) => {
+                                if (!mouseDownPos.current) return;
+                                const dx = Math.abs(e.clientX - mouseDownPos.current.x);
+                                const dy = Math.abs(e.clientY - mouseDownPos.current.y);
+                                if (dx < 5 && dy < 5) openEdit(task);
+                                mouseDownPos.current = null;
+                              }}
+                              className={cn(
+                                "rounded-xl border border-border/50 bg-card p-3 transition-all duration-150 group/card cursor-pointer relative",
+                                snapshot.isDragging && "shadow-xl shadow-black/10 rotate-[1deg] scale-[1.02] cursor-grabbing"
+                              )}
+                            >
+                              <p className="text-[13px] font-medium leading-snug text-foreground/90 pr-6">
+                                {task.title}
+                              </p>
+                              {task.description && (
+                                <p className="text-[11px] text-muted-foreground/50 mt-1 line-clamp-2">{task.description}</p>
+                              )}
+                              <div className="flex items-center gap-1.5 mt-2">
+                                <Badge
+                                  variant="secondary"
+                                  className={cn("text-[10px] font-medium rounded-full px-2 py-0", PRIORITY_COLORS[task.priority])}
+                                >
+                                  {task.priority}
+                                </Badge>
+                              </div>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
               </div>
             ))}
           </div>
-        </div>
+        </DragDropContext>
+      ) : (
+        /* Table View */
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-10"></TableHead>
+              <TableHead>Task</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Priority</TableHead>
+              <TableHead className="w-10"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {tasks.map((task) => (
+              <TableRow key={task.id} className="group/row">
+                <TableCell>
+                  {task.status !== "Done" ? (
+                    <button
+                      onClick={() => markDone(task.id)}
+                      className="h-5 w-5 rounded-md border-2 border-border/60 hover:border-emerald-400 hover:bg-emerald-50 flex items-center justify-center transition-all"
+                    />
+                  ) : (
+                    <button
+                      onClick={() => updateTask(task.id, { status: "To Do" })}
+                      className="h-5 w-5 rounded-md bg-emerald-500 border-2 border-emerald-500 flex items-center justify-center"
+                    >
+                      <Check className="h-3 w-3 text-white" />
+                    </button>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <button
+                    onClick={() => openEdit(task)}
+                    className={cn(
+                      "text-[13px] font-medium text-left hover:text-foreground transition-colors",
+                      task.status === "Done" && "line-through text-muted-foreground/40"
+                    )}
+                  >
+                    {task.title}
+                  </button>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="secondary" className={cn("text-[10px] rounded-full px-2 py-0", TASK_STATUS_COLORS[task.status]?.bg, TASK_STATUS_COLORS[task.status]?.text)}>
+                    <div className={cn("h-1.5 w-1.5 rounded-full mr-1", TASK_STATUS_COLORS[task.status]?.dot)} />
+                    {task.status}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="secondary" className={cn("text-[10px] rounded-full px-2 py-0", PRIORITY_COLORS[task.priority])}>
+                    {task.priority}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <button
+                    onClick={() => deleteTask(task.id)}
+                    className="opacity-0 group-hover/row:opacity-100 text-muted-foreground/30 hover:text-destructive transition-all"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
     </div>
   );

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { AdminTasksView } from "@/components/admin/admin-tasks-view";
 
@@ -5,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminTasksPage() {
   const tasks = await prisma.adminTask.findMany({
-    orderBy: [{ completed: "asc" }, { createdAt: "desc" }],
+    orderBy: [{ position: "asc" }, { createdAt: "desc" }],
   });
 
   const serialized = tasks.map((t) => ({
@@ -21,7 +22,9 @@ export default async function AdminTasksPage() {
           Your studio to-do list
         </p>
       </div>
-      <AdminTasksView tasks={serialized} />
+      <Suspense>
+        <AdminTasksView tasks={serialized} />
+      </Suspense>
     </div>
   );
 }

@@ -4,9 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
 const updateSchema = z.object({
-  text: z.string().min(1).optional(),
-  completed: z.boolean().optional(),
+  title: z.string().min(1).optional(),
+  description: z.string().nullable().optional(),
+  status: z.string().optional(),
   priority: z.string().optional(),
+  position: z.number().optional(),
 });
 
 export async function PUT(

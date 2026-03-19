@@ -43,6 +43,20 @@ export function Sidebar() {
         </h1>
       </div>
       <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
+        {/* Admin Tasks */}
+        <Link
+          href="/admin-tasks"
+          className={cn(
+            "flex items-center gap-2.5 rounded-lg px-3 py-[7px] text-[13px] font-medium transition-all duration-150",
+            isAdminActive
+              ? "bg-accent text-foreground shadow-sm"
+              : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+          )}
+        >
+          <ClipboardList className="h-[16px] w-[16px]" style={{ color: BRAND_RED }} />
+          Admin Tasks
+        </Link>
+
         {/* Projects with dropdown */}
         <div>
           <div className="flex items-center">
@@ -120,20 +134,6 @@ export function Sidebar() {
         >
           <CheckSquare className="h-[16px] w-[16px]" style={{ color: BRAND_RED }} />
           All Tasks
-        </Link>
-
-        {/* Admin Tasks */}
-        <Link
-          href="/admin-tasks"
-          className={cn(
-            "flex items-center gap-2.5 rounded-lg px-3 py-[7px] text-[13px] font-medium transition-all duration-150",
-            isAdminActive
-              ? "bg-accent text-foreground shadow-sm"
-              : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
-          )}
-        >
-          <ClipboardList className="h-[16px] w-[16px]" style={{ color: BRAND_RED }} />
-          Admin Tasks
         </Link>
 
         {/* Resources */}

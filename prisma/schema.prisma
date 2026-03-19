@@ -64,11 +64,13 @@ model ResourceDocument {
 }
 
 model AdminTask {
-  id        String   @id @default(cuid())
-  text      String
-  completed Boolean  @default(false)
-  priority  String   @default("Medium")
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  status      String   @default("To Do")
+  priority    String   @default("Medium")
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
 }
 
 model TeamMember {
