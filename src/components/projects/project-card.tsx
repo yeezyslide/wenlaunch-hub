@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { STATUS_COLORS, TAG_COLORS } from "@/lib/constants";
+import { STATUS_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { TagBadge } from "./tag-badge";
 
 interface ProjectCardProps {
   project: {
@@ -59,15 +60,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           {tags.length > 0 && (
             <div className="flex gap-1.5 flex-wrap mt-3">
               {tags.map((tag) => (
-                <span
-                  key={tag}
-                  className={cn(
-                    "text-[10px] font-medium px-2 py-0.5 rounded-full border",
-                    TAG_COLORS[tag] ?? "bg-muted text-muted-foreground border-border"
-                  )}
-                >
-                  {tag}
-                </span>
+                <TagBadge key={tag} tag={tag} />
               ))}
             </div>
           )}

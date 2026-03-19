@@ -220,6 +220,11 @@
   font-style: italic;
 }
 
+/* Hide scrollbar utility */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Apple-style smooth scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

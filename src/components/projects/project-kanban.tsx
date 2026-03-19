@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   DragDropContext,
@@ -8,11 +9,11 @@ import {
   Draggable,
   type DropResult,
 } from "@hello-pangea/dnd";
-import { Badge } from "@/components/ui/badge";
-import { PROJECT_STATUSES, TAG_COLORS } from "@/lib/constants";
+import { PROJECT_STATUSES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Pencil } from "lucide-react";
 import { ProjectForm } from "./project-form";
+import { TagBadge } from "./tag-badge";
 
 interface Project {
   id: string;
@@ -32,6 +33,10 @@ interface ProjectKanbanProps {
 export function ProjectKanban({ projects: initialProjects }: ProjectKanbanProps) {
   const router = useRouter();
   const [projects, setProjects] = useState(initialProjects);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const isDraggingScroll = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
 
   const columns = PROJECT_STATUSES.map((status) => ({
     id: status,
@@ -60,17 +65,49 @@ export function ProjectKanban({ projects: initialProjects }: ProjectKanbanProps)
     [projects, router]
   );
 
+  // Drag-to-scroll handlers
+  function handleMouseDown(e: React.MouseEvent) {
+    if (!scrollRef.current) return;
+    // Only start scroll-drag on the background, not on cards
+    if ((e.target as HTMLElement).closest("[data-rfd-draggable-id]")) return;
+    isDraggingScroll.current = true;
+    startX.current = e.pageX - scrollRef.current.offsetLeft;
+    scrollLeft.current = scrollRef.current.scrollLeft;
+    scrollRef.current.style.cursor = "grabbing";
+  }
+
+  function handleMouseMove(e: React.MouseEvent) {
+    if (!isDraggingScroll.current || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX.current) * 1.5;
+    scrollRef.current.scrollLeft = scrollLeft.current - walk;
+  }
+
+  function handleMouseUp() {
+    isDraggingScroll.current = false;
+    if (scrollRef.current) scrollRef.current.style.cursor = "";
+  }
+
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="flex gap-3 overflow-x-auto pb-4 -mx-8 px-8">
+      <div
+        ref={scrollRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        className="flex gap-4 overflow-x-auto pb-6 -mx-8 px-8 scrollbar-hide select-none"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      >
         {columns.map((column) => (
-          <div key={column.id} className="flex flex-col shrink-0 w-[240px]">
+          <div key={column.id} className="flex flex-col shrink-0 w-[260px]">
             <div className="flex items-center gap-2 mb-3 px-1">
-              <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70 truncate">
+              <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 truncate">
                 {column.title}
               </h3>
               {column.projects.length > 0 && (
-                <span className="text-[11px] font-medium text-muted-foreground/40 bg-muted/50 rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
+                <span className="text-[10px] font-semibold text-muted-foreground/40 bg-muted/40 rounded-full h-5 min-w-[20px] flex items-center justify-center px-1.5">
                   {column.projects.length}
                 </span>
               )}
@@ -81,8 +118,8 @@ export function ProjectKanban({ projects: initialProjects }: ProjectKanbanProps)
                   ref={provided.innerRef}
                   {...provided.droppableProps}
                   className={cn(
-                    "flex-1 rounded-xl bg-muted/30 p-1.5 space-y-1.5 min-h-[160px] transition-colors duration-150",
-                    snapshot.isDraggingOver && "bg-accent/40"
+                    "flex-1 rounded-2xl bg-muted/20 p-2 space-y-2 min-h-[180px] transition-all duration-200",
+                    snapshot.isDraggingOver && "bg-accent/30 ring-2 ring-accent/50"
                   )}
                 >
                   {column.projects.map((project, index) => {
@@ -95,56 +132,54 @@ export function ProjectKanban({ projects: initialProjects }: ProjectKanbanProps)
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
                             className={cn(
-                              "rounded-xl border border-border/50 bg-card overflow-hidden transition-all duration-150 group/card cursor-grab active:cursor-grabbing relative",
-                              snapshot.isDragging && "shadow-xl shadow-black/10 rotate-[1deg] scale-[1.02]"
+                              "rounded-2xl border border-border/40 bg-card overflow-hidden transition-all duration-200 group/card cursor-grab active:cursor-grabbing relative",
+                              snapshot.isDragging && "shadow-2xl shadow-black/15 rotate-[2deg] scale-[1.03] border-border"
                             )}
                           >
                             <ProjectForm
                               project={project}
                               trigger={
                                 <button
-                                  className="absolute top-2.5 right-2.5 h-6 w-6 rounded-md bg-black/30 hover:bg-black/50 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity z-10"
+                                  className="absolute top-2.5 right-2.5 h-7 w-7 rounded-lg bg-black/30 backdrop-blur-sm hover:bg-black/50 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all z-10"
                                   onMouseDown={(e) => e.stopPropagation()}
                                 >
                                   <Pencil className="h-3 w-3 text-white" />
                                 </button>
                               }
                             />
-                            {project.imageUrl ? (
-                              <div className="aspect-[16/10] bg-muted/50 overflow-hidden">
-                                <img
-                                  src={project.imageUrl}
-                                  alt={project.name}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            ) : (
-                              <div className="aspect-[16/10] bg-gradient-to-br from-blue-500/10 via-indigo-500/10 to-violet-500/10 flex items-center justify-center">
-                                <span className="text-2xl font-semibold text-muted-foreground/25">
-                                  {project.name.charAt(0).toUpperCase()}
-                                </span>
-                              </div>
-                            )}
+                            <Link href={`/projects/${project.id}`} onMouseDown={(e) => e.stopPropagation()}>
+                              {project.imageUrl ? (
+                                <div className="aspect-[16/9] bg-muted/50 overflow-hidden">
+                                  <img
+                                    src={project.imageUrl}
+                                    alt={project.name}
+                                    className="w-full h-full object-cover transition-transform duration-300 group-hover/card:scale-[1.03]"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="aspect-[16/9] bg-gradient-to-br from-blue-500/8 via-indigo-500/8 to-violet-500/8 flex items-center justify-center">
+                                  <span className="text-3xl font-semibold text-muted-foreground/20">
+                                    {project.name.charAt(0).toUpperCase()}
+                                  </span>
+                                </div>
+                              )}
+                            </Link>
                             <div className="p-3.5 space-y-2">
-                              <p className="text-[13px] font-semibold leading-snug text-foreground/90 truncate">
+                              <Link
+                                href={`/projects/${project.id}`}
+                                className="text-[13px] font-semibold leading-snug text-foreground/90 hover:text-foreground truncate block"
+                                onMouseDown={(e) => e.stopPropagation()}
+                              >
                                 {project.name}
-                              </p>
+                              </Link>
                               {tags.length > 0 && (
                                 <div className="flex gap-1 flex-wrap">
                                   {tags.map((tag) => (
-                                    <span
-                                      key={tag}
-                                      className={cn(
-                                        "text-[9px] font-medium px-1.5 py-0.5 rounded-full border",
-                                        TAG_COLORS[tag] ?? "bg-muted text-muted-foreground border-border"
-                                      )}
-                                    >
-                                      {tag}
-                                    </span>
+                                    <TagBadge key={tag} tag={tag} />
                                   ))}
                                 </div>
                               )}
-                              <p className="text-[11px] text-muted-foreground/60 font-medium">
+                              <p className="text-[11px] text-muted-foreground/50 font-medium">
                                 {project._count.tasks} task{project._count.tasks !== 1 ? "s" : ""}
                               </p>
                             </div>

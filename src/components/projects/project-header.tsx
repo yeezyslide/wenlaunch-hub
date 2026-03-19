@@ -5,8 +5,9 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ProjectForm } from "./project-form";
-import { STATUS_COLORS, TAG_COLORS } from "@/lib/constants";
+import { STATUS_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { TagBadge } from "./tag-badge";
 import { ExternalLink, Pencil, Trash2 } from "lucide-react";
 
 interface ProjectHeaderProps {
@@ -96,15 +97,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
         {tags.length > 0 && (
           <div className="flex gap-1.5 flex-wrap mt-3">
             {tags.map((tag) => (
-              <span
-                key={tag}
-                className={cn(
-                  "text-[11px] font-medium px-2.5 py-0.5 rounded-full border",
-                  TAG_COLORS[tag] ?? "bg-muted text-muted-foreground border-border"
-                )}
-              >
-                {tag}
-              </span>
+              <TagBadge key={tag} tag={tag} size="md" />
             ))}
           </div>
         )}
