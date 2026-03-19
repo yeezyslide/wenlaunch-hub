@@ -46,7 +46,7 @@ export const STATUS_COLORS: Record<string, string> = {
 export const PROJECT_TAGS = ["Framer Dev", "Design", "Shopify Dev"] as const;
 
 export const TAG_COLORS: Record<string, string> = {
-  "Framer Dev": "bg-violet-50 text-violet-700 border-violet-200",
+  "Framer Dev": "bg-blue-50 text-blue-700 border-blue-200",
   Design: "bg-pink-50 text-pink-700 border-pink-200",
   "Shopify Dev": "bg-green-50 text-green-700 border-green-200",
 };

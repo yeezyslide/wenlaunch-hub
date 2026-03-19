@@ -20,6 +20,7 @@ interface Project {
   name: string;
   description: string | null;
   imageUrl: string | null;
+  logoUrl: string | null;
   status: string;
   tags: string;
   figmaLink: string | null;

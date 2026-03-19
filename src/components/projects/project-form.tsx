@@ -31,6 +31,7 @@ interface ProjectFormProps {
     name: string;
     description: string | null;
     imageUrl: string | null;
+    logoUrl: string | null;
     figmaLink: string | null;
     status: string;
     tags: string;
@@ -41,15 +42,19 @@ interface ProjectFormProps {
 export function ProjectForm({ project, trigger }: ProjectFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [name, setName] = useState(project?.name ?? "");
   const [description, setDescription] = useState(project?.description ?? "");
   const [imageUrl, setImageUrl] = useState(project?.imageUrl ?? "");
   const [imagePreview, setImagePreview] = useState(project?.imageUrl ?? "");
+  const [logoUrl, setLogoUrl] = useState(project?.logoUrl ?? "");
+  const [logoPreview, setLogoPreview] = useState(project?.logoUrl ?? "");
   const [figmaLink, setFigmaLink] = useState(project?.figmaLink ?? "");
-  const [status, setStatus] = useState(project?.status ?? "Active");
+  const [status, setStatus] = useState(project?.status ?? "Waiting to Start");
   const [tags, setTags] = useState<string[]>(
     project?.tags ? project.tags.split(",").filter(Boolean) : []
   );
@@ -101,6 +106,35 @@ export function ProjectForm({ project, trigger }: ProjectFormProps) {
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { toast.error("Please select an image"); return; }
+
+    const localUrl = URL.createObjectURL(file);
+    setLogoPreview(localUrl);
+    setUploadingLogo(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: formData });
+    if (res.ok) {
+      const { url } = await res.json();
+      setLogoUrl(url);
+      setLogoPreview(url);
+    } else {
+      toast.error("Upload failed");
+      setLogoPreview(logoUrl);
+    }
+    setUploadingLogo(false);
+  }
+
+  function removeLogo() {
+    setLogoUrl("");
+    setLogoPreview("");
+    if (logoInputRef.current) logoInputRef.current.value = "";
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
@@ -116,6 +150,7 @@ export function ProjectForm({ project, trigger }: ProjectFormProps) {
         name: name.trim(),
         description: description.trim(),
         imageUrl: imageUrl.trim(),
+        logoUrl: logoUrl.trim(),
         figmaLink: figmaLink.trim(),
         tags: tags.join(","),
         status,
@@ -130,9 +165,11 @@ export function ProjectForm({ project, trigger }: ProjectFormProps) {
         setDescription("");
         setImageUrl("");
         setImagePreview("");
+        setLogoUrl("");
+        setLogoPreview("");
         setFigmaLink("");
         setTags([]);
-        setStatus("Active");
+        setStatus("Waiting to Start");
       }
       router.refresh();
     } else {
@@ -228,6 +265,43 @@ export function ProjectForm({ project, trigger }: ProjectFormProps) {
             />
           </div>
           <div className="space-y-2">
+            <Label>Project Logo</Label>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => logoInputRef.current?.click()}
+                className="h-14 w-14 rounded-xl border border-dashed border-border hover:border-muted-foreground/40 bg-muted/20 hover:bg-muted/40 flex items-center justify-center cursor-pointer transition-all overflow-hidden shrink-0"
+              >
+                {logoPreview ? (
+                  <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-1" />
+                ) : (
+                  <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
+                )}
+              </button>
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] text-muted-foreground/60">
+                  {logoPreview ? "Click to change" : "Upload a logo for the sidebar"}
+                </p>
+                {logoPreview && (
+                  <button
+                    type="button"
+                    onClick={removeLogo}
+                    className="text-[11px] text-destructive hover:text-destructive/80 mt-0.5"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                className="hidden"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
             <Label>Tags</Label>
             <div className="flex gap-2 flex-wrap">
               {PROJECT_TAGS.map((tag) => {
@@ -280,7 +354,7 @@ export function ProjectForm({ project, trigger }: ProjectFormProps) {
               </SelectContent>
             </Select>
           </div>
-          <Button type="submit" className="w-full" disabled={loading || uploading}>
+          <Button type="submit" className="w-full" disabled={loading || uploading || uploadingLogo}>
             {loading ? "Saving..." : isEdit ? "Update Project" : "Create Project"}
           </Button>
         </form>

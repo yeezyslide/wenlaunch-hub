@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -13,7 +14,6 @@ import {
 import { PRIORITY_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { format, isPast, isToday } from "date-fns";
-import { TaskForm } from "./task-form";
 
 interface Task {
   id: string;
@@ -44,6 +44,7 @@ const PRIORITY_ORDER: Record<string, number> = {
 };
 
 export function TaskTable({ tasks, projects, members }: TaskTableProps) {
+  const router = useRouter();
   const [sortKey, setSortKey] = useState<SortKey>("dueDate");
   const [sortAsc, setSortAsc] = useState(true);
 
@@ -124,20 +125,13 @@ export function TaskTable({ tasks, projects, members }: TaskTableProps) {
             isPast(new Date(task.dueDate)) &&
             !isToday(new Date(task.dueDate));
           return (
-            <TaskForm
-              key={task.id}
-              projects={projects}
-              members={members}
-              task={{
-                ...task,
-                dueDate: task.dueDate,
-              }}
-              trigger={
                 <TableRow
+                  key={task.id}
                   className={cn(
-                    "cursor-pointer",
+                    "cursor-pointer hover:bg-muted/30",
                     overdue && "border-l-2 border-l-red-500"
                   )}
+                  onClick={() => router.push(`/tasks/${task.id}`)}
                 >
                   <TableCell className="font-medium">{task.title}</TableCell>
                   <TableCell className="text-muted-foreground">
@@ -186,8 +180,6 @@ export function TaskTable({ tasks, projects, members }: TaskTableProps) {
                     )}
                   </TableCell>
                 </TableRow>
-              }
-            />
           );
         })}
       </TableBody>

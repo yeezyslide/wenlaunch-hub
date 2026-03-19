@@ -13,6 +13,7 @@ model Project {
   name        String
   description String?
   imageUrl    String?
+  logoUrl     String?
   status      String   @default("Waiting to Start")
   tags        String   @default("")
   figmaLink   String?

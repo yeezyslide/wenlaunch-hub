@@ -13,6 +13,7 @@ interface Project {
   name: string;
   status: string;
   imageUrl: string | null;
+  logoUrl: string | null;
 }
 
 export function Sidebar() {
@@ -82,7 +83,13 @@ export function Sidebar() {
                         : "text-muted-foreground/70 hover:bg-accent/40 hover:text-foreground"
                     )}
                   >
-                    {project.imageUrl ? (
+                    {project.logoUrl ? (
+                      <img
+                        src={project.logoUrl}
+                        alt=""
+                        className="h-4 w-4 rounded object-contain shrink-0"
+                      />
+                    ) : project.imageUrl ? (
                       <img
                         src={project.imageUrl}
                         alt=""

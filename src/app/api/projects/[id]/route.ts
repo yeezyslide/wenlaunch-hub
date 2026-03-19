@@ -6,6 +6,7 @@ const updateSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
   imageUrl: z.string().url().optional().or(z.literal("")),
+  logoUrl: z.string().url().optional().or(z.literal("")),
   figmaLink: z.string().url().optional().or(z.literal("")),
   tags: z.string().optional(),
   status: z.string().optional(),
@@ -44,6 +45,7 @@ export async function PUT(
   }
   const data: Record<string, unknown> = { ...parsed.data };
   if (data.imageUrl === "") data.imageUrl = null;
+  if (data.logoUrl === "") data.logoUrl = null;
   if (data.figmaLink === "") data.figmaLink = null;
 
   const project = await prisma.project.update({

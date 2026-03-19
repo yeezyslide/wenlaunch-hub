@@ -16,6 +16,7 @@ interface ProjectHeaderProps {
     name: string;
     description: string | null;
     imageUrl: string | null;
+    logoUrl: string | null;
     figmaLink: string | null;
     status: string;
     tags: string;
