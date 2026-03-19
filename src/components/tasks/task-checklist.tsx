@@ -1,8 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
+import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Plus, X, Check } from "lucide-react";
 
@@ -19,14 +17,18 @@ interface TaskChecklistProps {
   onUpdate: () => void;
 }
 
-export function TaskChecklist({ taskId, items: initialItems, onUpdate }: TaskChecklistProps) {
-  const [items, setItems] = useState(initialItems);
+export function TaskChecklist({ taskId, items, onUpdate }: TaskChecklistProps) {
+  const [localItems, setLocalItems] = useState(items);
   const [newText, setNewText] = useState("");
   const [adding, setAdding] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const completed = items.filter((i) => i.completed).length;
-  const total = items.length;
+  useEffect(() => {
+    setLocalItems(items);
+  }, [items]);
+
+  const completed = localItems.filter((i) => i.completed).length;
+  const total = localItems.length;
   const progress = total > 0 ? (completed / total) * 100 : 0;
 
   async function addItem() {
@@ -39,7 +41,7 @@ export function TaskChecklist({ taskId, items: initialItems, onUpdate }: TaskChe
     });
     if (res.ok) {
       const item = await res.json();
-      setItems([...items, item]);
+      setLocalItems([...localItems, item]);
       setNewText("");
       onUpdate();
       setTimeout(() => inputRef.current?.focus(), 0);
@@ -49,7 +51,7 @@ export function TaskChecklist({ taskId, items: initialItems, onUpdate }: TaskChe
 
   async function toggleItem(item: ChecklistItem) {
     const newCompleted = !item.completed;
-    setItems(items.map((i) => (i.id === item.id ? { ...i, completed: newCompleted } : i)));
+    setLocalItems(localItems.map((i) => (i.id === item.id ? { ...i, completed: newCompleted } : i)));
     await fetch(`/api/tasks/${taskId}/checklist`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -59,7 +61,7 @@ export function TaskChecklist({ taskId, items: initialItems, onUpdate }: TaskChe
   }
 
   async function deleteItem(itemId: string) {
-    setItems(items.filter((i) => i.id !== itemId));
+    setLocalItems(localItems.filter((i) => i.id !== itemId));
     await fetch(`/api/tasks/${taskId}/checklist`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
@@ -70,12 +72,26 @@ export function TaskChecklist({ taskId, items: initialItems, onUpdate }: TaskChe
 
   async function updateText(item: ChecklistItem, text: string) {
     if (!text.trim() || text === item.text) return;
-    setItems(items.map((i) => (i.id === item.id ? { ...i, text } : i)));
+    setLocalItems(localItems.map((i) => (i.id === item.id ? { ...i, text } : i)));
     await fetch(`/api/tasks/${taskId}/checklist`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: item.id, text: text.trim() }),
     });
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      e.stopPropagation();
+      addItem();
+    }
+  }
+
+  function handleAddClick(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem();
   }
 
   return (
@@ -99,14 +115,14 @@ export function TaskChecklist({ taskId, items: initialItems, onUpdate }: TaskChe
       )}
 
       <div className="space-y-0.5">
-        {items.map((item) => (
+        {localItems.map((item) => (
           <div
             key={item.id}
             className="flex items-center gap-2.5 group rounded-lg px-1 py-1 hover:bg-muted/30 transition-colors"
           >
             <button
               type="button"
-              onClick={() => toggleItem(item)}
+              onClick={(e) => { e.preventDefault(); toggleItem(item); }}
               className={cn(
                 "h-[18px] w-[18px] rounded-md border-2 flex items-center justify-center shrink-0 transition-all duration-150",
                 item.completed
@@ -119,9 +135,13 @@ export function TaskChecklist({ taskId, items: initialItems, onUpdate }: TaskChe
             <input
               type="text"
               defaultValue={item.text}
+              key={item.id + item.text}
               onBlur={(e) => updateText(item, e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  (e.target as HTMLInputElement).blur();
+                }
               }}
               className={cn(
                 "flex-1 bg-transparent text-[13px] outline-none py-0.5 transition-colors",
@@ -130,7 +150,7 @@ export function TaskChecklist({ taskId, items: initialItems, onUpdate }: TaskChe
             />
             <button
               type="button"
-              onClick={() => deleteItem(item.id)}
+              onClick={(e) => { e.preventDefault(); deleteItem(item.id); }}
               className="opacity-0 group-hover:opacity-100 text-muted-foreground/40 hover:text-destructive transition-all"
             >
               <X className="h-3.5 w-3.5" />
@@ -139,29 +159,26 @@ export function TaskChecklist({ taskId, items: initialItems, onUpdate }: TaskChe
         ))}
       </div>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          addItem();
-        }}
-        className="flex items-center gap-2"
-      >
-        <Input
+      <div className="flex items-center gap-2">
+        <input
           ref={inputRef}
+          type="text"
           value={newText}
           onChange={(e) => setNewText(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder="Add sub-task..."
           disabled={adding}
-          className="text-[13px] h-8 bg-transparent border-dashed"
+          className="flex-1 h-8 rounded-lg border border-dashed border-border bg-transparent px-3 text-[13px] outline-none focus:border-ring transition-colors"
         />
         <button
-          type="submit"
+          type="button"
+          onClick={handleAddClick}
           disabled={adding || !newText.trim()}
           className="text-muted-foreground/50 hover:text-foreground disabled:opacity-30 transition-colors shrink-0"
         >
           <Plus className="h-4 w-4" />
         </button>
-      </form>
+      </div>
     </div>
   );
 }

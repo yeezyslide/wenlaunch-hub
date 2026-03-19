@@ -22,7 +22,7 @@ interface TaskFiltersProps {
 export function TaskFilters({ projects, members }: TaskFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const view = searchParams.get("view") ?? "table";
+  const view = searchParams.get("view") ?? "kanban";
 
   function updateFilter(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());

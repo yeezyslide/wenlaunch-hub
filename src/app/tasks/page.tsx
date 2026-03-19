@@ -16,7 +16,7 @@ export default async function TasksPage({
   const status = typeof params.status === "string" ? params.status : undefined;
   const assigneeId = typeof params.assigneeId === "string" ? params.assigneeId : undefined;
   const dateFilter = typeof params.date === "string" ? params.date : undefined;
-  const view = typeof params.view === "string" ? params.view : "table";
+  const view = typeof params.view === "string" ? params.view : "kanban";
 
   const where: Record<string, unknown> = {};
   if (projectId) where.projectId = projectId;
