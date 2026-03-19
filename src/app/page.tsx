@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { ProjectCard } from "@/components/projects/project-card";
 import { ProjectForm } from "@/components/projects/project-form";
 import { ProjectFilters } from "@/components/projects/project-filters";
-import { ProjectKanban } from "@/components/projects/project-kanban";
+import { ProjectTable } from "@/components/projects/project-table";
 
 export const dynamic = "force-dynamic";
 
@@ -46,8 +46,8 @@ export default async function DashboardPage({
           <p className="text-[17px] font-medium mb-1">No projects yet</p>
           <p className="text-[14px]">Create your first project to get started.</p>
         </div>
-      ) : view === "kanban" ? (
-        <ProjectKanban projects={projects} />
+      ) : view === "table" ? (
+        <ProjectTable projects={projects} />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {projects.map((project) => (

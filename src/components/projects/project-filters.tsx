@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { PROJECT_STATUSES, PROJECT_TAGS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { LayoutGrid, Columns3 } from "lucide-react";
+import { LayoutGrid, LayoutList } from "lucide-react";
 
 export function ProjectFilters() {
   const router = useRouter();
@@ -81,11 +81,11 @@ export function ProjectFilters() {
           size="icon"
           className={cn(
             "h-7 w-7 rounded-md",
-            view === "kanban" && "bg-accent shadow-sm"
+            view === "table" && "bg-accent shadow-sm"
           )}
-          onClick={() => updateFilter("view", "kanban")}
+          onClick={() => updateFilter("view", "table")}
         >
-          <Columns3 className="h-3.5 w-3.5" />
+          <LayoutList className="h-3.5 w-3.5" />
         </Button>
       </div>
     </div>
