@@ -27,9 +27,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TASK_STATUSES, TASK_STATUS_COLORS, PRIORITY_COLORS, TASK_PRIORITIES } from "@/lib/constants";
+import { RichEditor } from "@/components/ui/rich-editor";
+import { ADMIN_TASK_STATUSES, ADMIN_STATUS_COLORS, PRIORITY_COLORS, TASK_PRIORITIES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { Plus, Trash2, Check, Pencil, LayoutList, Columns3 } from "lucide-react";
+import { Plus, Trash2, Check, LayoutList, Columns3 } from "lucide-react";
 
 interface AdminTask {
   id: string;
@@ -52,6 +53,7 @@ export function AdminTasksView({ tasks: initialTasks }: { tasks: AdminTask[] }) 
   const [editTask, setEditTask] = useState<AdminTask | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
+  const [editDirty, setEditDirty] = useState(false);
   const mouseDownPos = useRef<{ x: number; y: number } | null>(null);
 
   function setView(v: string) {
@@ -92,20 +94,21 @@ export function AdminTasksView({ tasks: initialTasks }: { tasks: AdminTask[] }) 
     toast.success("Task deleted");
   }
 
-  async function markDone(id: string) {
-    updateTask(id, { status: "Done" });
-  }
-
   function openEdit(task: AdminTask) {
     setEditTask(task);
     setEditTitle(task.title);
     setEditDesc(task.description ?? "");
+    setEditDirty(false);
   }
 
   async function saveEdit() {
     if (!editTask || !editTitle.trim()) return;
-    updateTask(editTask.id, { title: editTitle.trim(), description: editDesc.trim() || null });
+    updateTask(editTask.id, {
+      title: editTitle.trim(),
+      description: editDesc.trim() || null,
+    });
     setEditTask(null);
+    toast.success("Saved");
   }
 
   const handleDragEnd = useCallback(
@@ -125,7 +128,7 @@ export function AdminTasksView({ tasks: initialTasks }: { tasks: AdminTask[] }) 
     [tasks]
   );
 
-  const columns = TASK_STATUSES.map((status) => ({
+  const columns = ADMIN_TASK_STATUSES.map((status) => ({
     id: status,
     tasks: tasks.filter((t) => t.status === status).sort((a, b) => a.position - b.position),
   }));
@@ -196,8 +199,13 @@ export function AdminTasksView({ tasks: initialTasks }: { tasks: AdminTask[] }) 
         </div>
       </div>
 
-      {/* Edit dialog */}
-      <Dialog open={!!editTask} onOpenChange={(open) => !open && setEditTask(null)}>
+      {/* Edit dialog with rich text */}
+      <Dialog open={!!editTask} onOpenChange={(open) => {
+        if (!open) {
+          if (editDirty) saveEdit();
+          else setEditTask(null);
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Task</DialogTitle>
@@ -205,15 +213,13 @@ export function AdminTasksView({ tasks: initialTasks }: { tasks: AdminTask[] }) 
           <div className="space-y-4">
             <Input
               value={editTitle}
-              onChange={(e) => setEditTitle(e.target.value)}
+              onChange={(e) => { setEditTitle(e.target.value); setEditDirty(true); }}
               placeholder="Task title"
             />
-            <textarea
-              value={editDesc}
-              onChange={(e) => setEditDesc(e.target.value)}
-              placeholder="Add notes or details..."
-              rows={5}
-              className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-[13px] outline-none focus:border-ring transition-colors resize-none"
+            <RichEditor
+              content={editDesc}
+              onChange={(html) => { setEditDesc(html); setEditDirty(true); }}
+              placeholder="Add notes, checklists, details..."
             />
             <div className="flex gap-2">
               <Button onClick={saveEdit} className="flex-1">Save</Button>
@@ -230,12 +236,12 @@ export function AdminTasksView({ tasks: initialTasks }: { tasks: AdminTask[] }) 
       {/* Kanban View */}
       {view === "kanban" ? (
         <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 gap-4">
             {columns.map((column) => (
               <div key={column.id} className="flex flex-col">
                 <div className="flex items-center gap-2 mb-3 px-1">
-                  <div className={cn("h-2 w-2 rounded-full", TASK_STATUS_COLORS[column.id]?.dot)} />
-                  <h3 className={cn("text-[12px] font-semibold uppercase tracking-wider", TASK_STATUS_COLORS[column.id]?.text)}>
+                  <div className={cn("h-2 w-2 rounded-full", ADMIN_STATUS_COLORS[column.id]?.dot)} />
+                  <h3 className={cn("text-[12px] font-semibold uppercase tracking-wider", ADMIN_STATUS_COLORS[column.id]?.text)}>
                     {column.id}
                   </h3>
                   <span className="text-[11px] font-medium text-muted-foreground/40 bg-muted/50 rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
@@ -268,15 +274,15 @@ export function AdminTasksView({ tasks: initialTasks }: { tasks: AdminTask[] }) 
                                 mouseDownPos.current = null;
                               }}
                               className={cn(
-                                "rounded-xl border border-border/50 bg-card p-3 transition-all duration-150 group/card cursor-pointer relative",
+                                "rounded-xl border border-border/50 bg-card p-3 transition-all duration-150 cursor-pointer relative",
                                 snapshot.isDragging && "shadow-xl shadow-black/10 rotate-[1deg] scale-[1.02] cursor-grabbing"
                               )}
                             >
-                              <p className="text-[13px] font-medium leading-snug text-foreground/90 pr-6">
+                              <p className="text-[13px] font-medium leading-snug text-foreground/90">
                                 {task.title}
                               </p>
                               {task.description && (
-                                <p className="text-[11px] text-muted-foreground/50 mt-1 line-clamp-2">{task.description}</p>
+                                <p className="text-[11px] text-muted-foreground/50 mt-1 line-clamp-2">{task.description.replace(/<[^>]*>/g, "")}</p>
                               )}
                               <div className="flex items-center gap-1.5 mt-2">
                                 <Badge
@@ -316,7 +322,7 @@ export function AdminTasksView({ tasks: initialTasks }: { tasks: AdminTask[] }) 
                 <TableCell>
                   {task.status !== "Done" ? (
                     <button
-                      onClick={() => markDone(task.id)}
+                      onClick={() => updateTask(task.id, { status: "Done" })}
                       className="h-5 w-5 rounded-md border-2 border-border/60 hover:border-emerald-400 hover:bg-emerald-50 flex items-center justify-center transition-all"
                     />
                   ) : (
@@ -340,8 +346,8 @@ export function AdminTasksView({ tasks: initialTasks }: { tasks: AdminTask[] }) 
                   </button>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="secondary" className={cn("text-[10px] rounded-full px-2 py-0", TASK_STATUS_COLORS[task.status]?.bg, TASK_STATUS_COLORS[task.status]?.text)}>
-                    <div className={cn("h-1.5 w-1.5 rounded-full mr-1", TASK_STATUS_COLORS[task.status]?.dot)} />
+                  <Badge variant="secondary" className={cn("text-[10px] rounded-full px-2 py-0", ADMIN_STATUS_COLORS[task.status]?.bg, ADMIN_STATUS_COLORS[task.status]?.text)}>
+                    <div className={cn("h-1.5 w-1.5 rounded-full mr-1", ADMIN_STATUS_COLORS[task.status]?.dot)} />
                     {task.status}
                   </Badge>
                 </TableCell>
