@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { ProjectHeader } from "@/components/projects/project-header";
-import { TranscriptsSection } from "@/components/projects/transcripts-section";
+import { ProjectDescription } from "@/components/projects/project-description";
+import { ProjectLinks } from "@/components/projects/project-links";
 import { KanbanBoard } from "@/components/tasks/kanban-board";
 import { Separator } from "@/components/ui/separator";
 
@@ -31,10 +32,15 @@ export default async function ProjectPage({
   return (
     <div className="space-y-8">
       <ProjectHeader project={project} />
-      <Separator className="opacity-50" />
-      <TranscriptsSection
+      <ProjectDescription
         projectId={project.id}
-        initialContent={project.transcripts ?? ""}
+        initialContent={project.description ?? ""}
+      />
+      <Separator className="opacity-50" />
+      <ProjectLinks
+        projectId={project.id}
+        initialLinks={project.links}
+        figmaLink={project.figmaLink}
       />
       <Separator className="opacity-50" />
       <div>

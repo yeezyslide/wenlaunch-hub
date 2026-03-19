@@ -11,7 +11,7 @@ const updateSchema = z.object({
   figmaLink: z.string().url().optional().or(z.literal("")),
   tags: z.string().optional(),
   status: z.string().optional(),
-  transcripts: z.string().optional(),
+  links: z.string().optional(),
 });
 
 export async function GET(

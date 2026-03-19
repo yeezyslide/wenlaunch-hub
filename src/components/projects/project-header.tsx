@@ -8,7 +8,7 @@ import { ProjectForm } from "./project-form";
 import { STATUS_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { TagBadge } from "./tag-badge";
-import { ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface ProjectHeaderProps {
   project: {
@@ -40,18 +40,26 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
 
   return (
     <div className="flex gap-8 mb-10">
-      <div className="w-52 h-36 rounded-2xl overflow-hidden bg-muted/50 shrink-0 shadow-sm">
-        {project.imageUrl ? (
-          <img
-            src={project.imageUrl}
-            alt={project.name}
-            className="object-cover w-full h-full"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-blue-500/10 via-indigo-500/10 to-violet-500/10 flex items-center justify-center">
-            <span className="text-5xl font-semibold text-muted-foreground/25">
-              {project.name.charAt(0).toUpperCase()}
-            </span>
+      <div className="flex flex-col gap-3 shrink-0">
+        <div className="w-52 h-36 rounded-2xl overflow-hidden bg-muted/50 shadow-sm">
+          {project.imageUrl ? (
+            <img
+              src={project.imageUrl}
+              alt={project.name}
+              className="object-cover w-full h-full"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-blue-500/10 via-indigo-500/10 to-violet-500/10 flex items-center justify-center">
+              <span className="text-5xl font-semibold text-muted-foreground/25">
+                {project.name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
+        </div>
+        {project.logoUrl && (
+          <div className="flex items-center gap-2 px-1">
+            <img src={project.logoUrl} alt="" className="h-6 w-6 rounded-md object-contain" />
+            <span className="text-[11px] text-muted-foreground/50 font-medium">Logo</span>
           </div>
         )}
       </div>
@@ -61,11 +69,6 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
             <h1 className="text-[28px] font-semibold tracking-[-0.02em] text-foreground/95">
               {project.name}
             </h1>
-            {project.description && (
-              <p className="text-[15px] text-muted-foreground mt-1.5 leading-relaxed">
-                {project.description}
-              </p>
-            )}
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <Badge
@@ -101,17 +104,6 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
               <TagBadge key={tag} tag={tag} size="md" />
             ))}
           </div>
-        )}
-        {project.figmaLink && (
-          <a
-            href={project.figmaLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-[13px] font-medium text-blue-500 hover:text-blue-600 mt-4 transition-colors"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            Open in Figma
-          </a>
         )}
       </div>
     </div>

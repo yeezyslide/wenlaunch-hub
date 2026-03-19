@@ -17,7 +17,7 @@ model Project {
   status      String   @default("Waiting to Start")
   tags        String   @default("")
   figmaLink   String?
-  transcripts String?
+  links       String   @default("[]")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   tasks       Task[]
