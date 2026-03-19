@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
@@ -59,5 +60,8 @@ export async function POST(request: Request) {
     },
     include: { assignee: true },
   });
+  revalidatePath("/tasks");
+  revalidatePath("/projects");
+  revalidatePath("/");
   return NextResponse.json(task, { status: 201 });
 }

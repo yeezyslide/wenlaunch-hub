@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
 const updateSchema = z.object({
   title: z.string().min(1).optional(),
-  description: z.string().optional(),
+  description: z.string().nullable().optional(),
   status: z.string().optional(),
   priority: z.string().optional(),
   dueDate: z.string().nullable().optional(),
   assigneeId: z.string().nullable().optional(),
+  projectId: z.string().optional(),
   position: z.number().optional(),
 });
 
@@ -37,6 +39,9 @@ export async function PUT(
     data,
     include: { assignee: true },
   });
+  revalidatePath("/tasks");
+  revalidatePath("/projects");
+  revalidatePath("/");
   return NextResponse.json(task);
 }
 
@@ -46,5 +51,8 @@ export async function DELETE(
 ) {
   const { id } = await params;
   await prisma.task.delete({ where: { id } });
+  revalidatePath("/tasks");
+  revalidatePath("/projects");
+  revalidatePath("/");
   return NextResponse.json({ success: true });
 }

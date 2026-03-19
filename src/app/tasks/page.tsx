@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
+
+export const dynamic = "force-dynamic";
 import { TaskTable } from "@/components/tasks/task-table";
 import { TaskFilters } from "@/components/tasks/task-filters";
 import { TaskForm } from "@/components/tasks/task-form";

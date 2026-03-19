@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
@@ -52,6 +53,9 @@ export async function PUT(
     where: { id },
     data,
   });
+  revalidatePath("/");
+  revalidatePath("/projects");
+  revalidatePath(`/projects/${id}`);
   return NextResponse.json(project);
 }
 
@@ -61,5 +65,7 @@ export async function DELETE(
 ) {
   const { id } = await params;
   await prisma.project.delete({ where: { id } });
+  revalidatePath("/");
+  revalidatePath("/projects");
   return NextResponse.json({ success: true });
 }
