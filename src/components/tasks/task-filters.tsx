@@ -8,7 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { TASK_STATUSES } from "@/lib/constants";
+import { cn } from "@/lib/utils";
+import { LayoutList, Columns3 } from "lucide-react";
 
 interface TaskFiltersProps {
   projects: { id: string; name: string }[];
@@ -18,10 +22,11 @@ interface TaskFiltersProps {
 export function TaskFilters({ projects, members }: TaskFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const view = searchParams.get("view") ?? "table";
 
   function updateFilter(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
-    if (value === "all") {
+    if (value === "all" || value === "") {
       params.delete(key);
     } else {
       params.set(key, value);
@@ -30,7 +35,7 @@ export function TaskFilters({ projects, members }: TaskFiltersProps) {
   }
 
   return (
-    <div className="flex gap-3 flex-wrap">
+    <div className="flex items-center gap-3 flex-wrap">
       <Select
         value={searchParams.get("projectId") ?? "all"}
         onValueChange={(v) => v && updateFilter("projectId", v)}
@@ -83,6 +88,47 @@ export function TaskFilters({ projects, members }: TaskFiltersProps) {
           ))}
         </SelectContent>
       </Select>
+
+      <Select
+        value={searchParams.get("date") ?? "all"}
+        onValueChange={(v) => v && updateFilter("date", v)}
+      >
+        <SelectTrigger className="w-[140px]">
+          <SelectValue placeholder="Any Date" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Any Date</SelectItem>
+          <SelectItem value="today">Today</SelectItem>
+          <SelectItem value="week">This Week</SelectItem>
+          <SelectItem value="overdue">Overdue</SelectItem>
+          <SelectItem value="none">No Date</SelectItem>
+        </SelectContent>
+      </Select>
+
+      <div className="ml-auto flex items-center rounded-lg border border-border/50 p-0.5">
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "h-7 w-7 rounded-md",
+            view === "table" && "bg-accent shadow-sm"
+          )}
+          onClick={() => updateFilter("view", "table")}
+        >
+          <LayoutList className="h-3.5 w-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "h-7 w-7 rounded-md",
+            view === "kanban" && "bg-accent shadow-sm"
+          )}
+          onClick={() => updateFilter("view", "kanban")}
+        >
+          <Columns3 className="h-3.5 w-3.5" />
+        </Button>
+      </div>
     </div>
   );
 }
