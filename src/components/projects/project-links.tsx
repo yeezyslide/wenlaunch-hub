@@ -98,35 +98,28 @@ export function ProjectLinks({ projectId, initialLinks, figmaLink }: ProjectLink
           No resource links yet. Add links to important project resources.
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="flex flex-wrap gap-2">
           {allLinks.map((link, i) => (
             <a
               key={i}
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 p-3 rounded-xl border border-border/40 bg-card hover:bg-muted/30 hover:border-border transition-all group/link"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/40 bg-card hover:bg-muted/30 hover:border-border transition-all group/link text-[12px] font-medium text-foreground/70 hover:text-foreground"
             >
-              <div className="h-8 w-8 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
-                {link.type === "figma" ? (
-                  <svg className="h-4 w-4" viewBox="0 0 38 57" fill="none"><path d="M19 28.5C19 23.2533 23.2533 19 28.5 19C33.7467 19 38 23.2533 38 28.5C38 33.7467 33.7467 38 28.5 38C23.2533 38 19 33.7467 19 28.5Z" fill="#1ABCFE"/><path d="M0 47.5C0 42.2533 4.25329 38 9.5 38H19V47.5C19 52.7467 14.7467 57 9.5 57C4.25329 57 0 52.7467 0 47.5Z" fill="#0ACF83"/><path d="M19 0V19H28.5C33.7467 19 38 14.7467 38 9.5C38 4.25329 33.7467 0 28.5 0H19Z" fill="#FF7262"/><path d="M0 9.5C0 14.7467 4.25329 19 9.5 19H19V0H9.5C4.25329 0 0 4.25329 0 9.5Z" fill="#F24E1E"/><path d="M0 28.5C0 33.7467 4.25329 38 9.5 38H19V19H9.5C4.25329 19 0 23.2533 0 28.5Z" fill="#A259FF"/></svg>
-                ) : (
-                  <Globe className="h-4 w-4 text-muted-foreground/50" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-medium text-foreground/80 group-hover/link:text-foreground truncate">
-                  {link.label}
-                </p>
-                <p className="text-[11px] text-muted-foreground/40 truncate">{link.url}</p>
-              </div>
-              <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/30 group-hover/link:text-muted-foreground shrink-0" />
+              {link.type === "figma" ? (
+                <svg className="h-3.5 w-3.5 shrink-0" viewBox="0 0 38 57" fill="none"><path d="M19 28.5C19 23.2533 23.2533 19 28.5 19C33.7467 19 38 23.2533 38 28.5C38 33.7467 33.7467 38 28.5 38C23.2533 38 19 33.7467 19 28.5Z" fill="#1ABCFE"/><path d="M0 47.5C0 42.2533 4.25329 38 9.5 38H19V47.5C19 52.7467 14.7467 57 9.5 57C4.25329 57 0 52.7467 0 47.5Z" fill="#0ACF83"/><path d="M19 0V19H28.5C33.7467 19 38 14.7467 38 9.5C38 4.25329 33.7467 0 28.5 0H19Z" fill="#FF7262"/><path d="M0 9.5C0 14.7467 4.25329 19 9.5 19H19V0H9.5C4.25329 0 0 4.25329 0 9.5Z" fill="#F24E1E"/><path d="M0 28.5C0 33.7467 4.25329 38 9.5 38H19V19H9.5C4.25329 19 0 23.2533 0 28.5Z" fill="#A259FF"/></svg>
+              ) : (
+                <Globe className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
+              )}
+              {link.label}
+              <ExternalLink className="h-3 w-3 text-muted-foreground/30 group-hover/link:text-muted-foreground shrink-0" />
               {link.type !== "figma" && (
                 <button
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeLink(i - (figmaLink ? 1 : 0)); }}
-                  className="h-6 w-6 rounded-md flex items-center justify-center opacity-0 group-hover/link:opacity-100 text-destructive hover:bg-destructive/10 transition-all shrink-0"
+                  className="h-4 w-4 rounded flex items-center justify-center opacity-0 group-hover/link:opacity-100 text-destructive hover:bg-destructive/10 transition-all shrink-0 -mr-1"
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Trash2 className="h-2.5 w-2.5" />
                 </button>
               )}
             </a>
