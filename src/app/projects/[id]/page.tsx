@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { ProjectHeader } from "@/components/projects/project-header";
 import { ProjectDescription } from "@/components/projects/project-description";
 import { ProjectLinks } from "@/components/projects/project-links";
+import { ProjectMilestones } from "@/components/projects/project-milestones";
 import { KanbanBoard } from "@/components/tasks/kanban-board";
 import { Separator } from "@/components/ui/separator";
 
@@ -18,6 +19,9 @@ export default async function ProjectPage({
     include: {
       tasks: {
         include: { assignee: true },
+        orderBy: { position: "asc" },
+      },
+      milestones: {
         orderBy: { position: "asc" },
       },
     },
@@ -42,6 +46,8 @@ export default async function ProjectPage({
         initialLinks={project.links}
         figmaLink={project.figmaLink}
       />
+      <Separator className="opacity-50" />
+      <ProjectMilestones projectId={project.id} milestones={project.milestones} />
       <Separator className="opacity-50" />
       <div>
         <h2 className="text-[17px] font-semibold tracking-[-0.01em] mb-5">Tasks</h2>

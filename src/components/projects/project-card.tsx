@@ -13,11 +13,19 @@ interface ProjectCardProps {
     status: string;
     tags: string;
     _count: { tasks: number };
+    milestones?: { amount: number; paid: boolean }[];
   };
+}
+
+function formatCompact(n: number) {
+  if (n >= 1000) return `$${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}k`;
+  return `$${n}`;
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
   const tags = project.tags ? project.tags.split(",").filter(Boolean) : [];
+  const total = project.milestones?.reduce((s, m) => s + m.amount, 0) ?? 0;
+  const collected = project.milestones?.filter((m) => m.paid).reduce((s, m) => s + m.amount, 0) ?? 0;
 
   return (
     <Link href={`/projects/${project.id}`}>
@@ -59,9 +67,19 @@ export function ProjectCard({ project }: ProjectCardProps) {
               ))}
             </div>
           )}
-          <p className="text-[11px] text-muted-foreground/50 mt-2 font-medium">
-            {project._count.tasks} task{project._count.tasks !== 1 ? "s" : ""}
-          </p>
+          <div className="flex items-center gap-3 mt-2">
+            <p className="text-[11px] text-muted-foreground/50 font-medium">
+              {project._count.tasks} task{project._count.tasks !== 1 ? "s" : ""}
+            </p>
+            {total > 0 && (
+              <p className={cn(
+                "text-[11px] font-medium",
+                collected === total ? "text-emerald-500" : "text-muted-foreground/40"
+              )}>
+                {formatCompact(collected)}/{formatCompact(total)}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </Link>

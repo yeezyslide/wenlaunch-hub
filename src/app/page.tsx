@@ -23,7 +23,10 @@ export default async function DashboardPage({
 
   const projects = await prisma.project.findMany({
     where,
-    include: { _count: { select: { tasks: true } } },
+    include: {
+      _count: { select: { tasks: true } },
+      milestones: { select: { amount: true, paid: true } },
+    },
     orderBy: { createdAt: "desc" },
   });
 

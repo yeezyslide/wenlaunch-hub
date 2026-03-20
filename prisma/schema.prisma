@@ -18,9 +18,22 @@ model Project {
   tags        String   @default("")
   figmaLink   String?
   links       String   @default("[]")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
   tasks       Task[]
+  milestones  PaymentMilestone[]
+}
+
+model PaymentMilestone {
+  id        String   @id @default(cuid())
+  name      String
+  amount    Float
+  paid      Boolean  @default(false)
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Task {

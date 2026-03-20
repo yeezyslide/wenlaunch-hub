@@ -23,6 +23,12 @@ interface Project {
   status: string;
   tags: string;
   _count: { tasks: number };
+  milestones?: { amount: number; paid: boolean }[];
+}
+
+function formatCompact(n: number) {
+  if (n >= 1000) return `$${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}k`;
+  return `$${n}`;
 }
 
 export function ProjectTable({ projects }: { projects: Project[] }) {
@@ -36,6 +42,7 @@ export function ProjectTable({ projects }: { projects: Project[] }) {
           <TableHead>Status</TableHead>
           <TableHead>Tags</TableHead>
           <TableHead className="text-right">Tasks</TableHead>
+          <TableHead className="text-right">Payments</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -95,6 +102,21 @@ export function ProjectTable({ projects }: { projects: Project[] }) {
               </TableCell>
               <TableCell className="text-right text-[12px] text-muted-foreground/60 font-medium">
                 {project._count.tasks}
+              </TableCell>
+              <TableCell className="text-right">
+                {(() => {
+                  const total = project.milestones?.reduce((s, m) => s + m.amount, 0) ?? 0;
+                  const collected = project.milestones?.filter((m) => m.paid).reduce((s, m) => s + m.amount, 0) ?? 0;
+                  if (total === 0) return <span className="text-[12px] text-muted-foreground/30">—</span>;
+                  return (
+                    <span className={cn(
+                      "text-[12px] font-medium",
+                      collected === total ? "text-emerald-500" : "text-muted-foreground/60"
+                    )}>
+                      {formatCompact(collected)}/{formatCompact(total)}
+                    </span>
+                  );
+                })()}
               </TableCell>
             </TableRow>
           );
