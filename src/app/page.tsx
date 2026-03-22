@@ -50,16 +50,6 @@ export default async function DashboardPage({
   }
   const pending = totalRevenue - collected;
 
-  // Build pipeline: projects ranked by pending payment (highest first)
-  const pipeline = allProjects
-    .map((p) => {
-      const total = p.milestones.reduce((s, m) => s + m.amount, 0);
-      const paid = p.milestones.filter((m) => m.paid).reduce((s, m) => s + m.amount, 0);
-      return { name: p.name, pending: total - paid, total };
-    })
-    .filter((p) => p.pending > 0)
-    .sort((a, b) => b.pending - a.pending);
-
   // Build a priority rank map for displayed projects (by pending $)
   const rankedProjects = [...projects]
     .map((p) => {
@@ -88,7 +78,6 @@ export default async function DashboardPage({
         totalRevenue={totalRevenue}
         collected={collected}
         pending={pending}
-        pipeline={pipeline}
       />
       <div className="mb-5">
         <Suspense>
