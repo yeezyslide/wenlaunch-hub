@@ -38,10 +38,7 @@ export default async function DashboardPage({
       })
     : projects;
 
-  const DONE_STATUSES = ["Done"];
-  const activeProjects = allProjects.filter(
-    (p) => !DONE_STATUSES.includes(p.status)
-  ).length;
+  const activeProjects = allProjects.filter((p) => p.status !== "Done").length;
 
   let totalRevenue = 0;
   let collected = 0;
@@ -52,6 +49,30 @@ export default async function DashboardPage({
     }
   }
   const pending = totalRevenue - collected;
+
+  // Build pipeline: projects ranked by pending payment (highest first)
+  const pipeline = allProjects
+    .map((p) => {
+      const total = p.milestones.reduce((s, m) => s + m.amount, 0);
+      const paid = p.milestones.filter((m) => m.paid).reduce((s, m) => s + m.amount, 0);
+      return { name: p.name, pending: total - paid, total };
+    })
+    .filter((p) => p.pending > 0)
+    .sort((a, b) => b.pending - a.pending);
+
+  // Build a priority rank map for displayed projects (by pending $)
+  const rankedProjects = [...projects]
+    .map((p) => {
+      const total = p.milestones.reduce((s, m) => s + m.amount, 0);
+      const paid = p.milestones.filter((m) => m.paid).reduce((s, m) => s + m.amount, 0);
+      return { ...p, pendingAmount: total - paid };
+    })
+    .sort((a, b) => b.pendingAmount - a.pendingAmount);
+
+  const priorityRanks: Record<string, number> = {};
+  rankedProjects.forEach((p, i) => {
+    if (p.pendingAmount > 0) priorityRanks[p.id] = i + 1;
+  });
 
   return (
     <div>
@@ -67,6 +88,7 @@ export default async function DashboardPage({
         totalRevenue={totalRevenue}
         collected={collected}
         pending={pending}
+        pipeline={pipeline}
       />
       <div className="mb-5">
         <Suspense>
@@ -79,11 +101,15 @@ export default async function DashboardPage({
           <p className="text-[14px]">Create your first project to get started.</p>
         </div>
       ) : view === "table" ? (
-        <ProjectTable projects={projects} />
+        <ProjectTable projects={projects} priorityRanks={priorityRanks} />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <ProjectCard
+              key={project.id}
+              project={project}
+              priorityRank={priorityRanks[project.id]}
+            />
           ))}
         </div>
       )}

@@ -15,6 +15,7 @@ interface ProjectCardProps {
     _count: { tasks: number };
     milestones?: { amount: number; paid: boolean }[];
   };
+  priorityRank?: number;
 }
 
 function formatCompact(n: number) {
@@ -22,10 +23,11 @@ function formatCompact(n: number) {
   return `$${n}`;
 }
 
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({ project, priorityRank }: ProjectCardProps) {
   const tags = project.tags ? project.tags.split(",").filter(Boolean) : [];
   const total = project.milestones?.reduce((s, m) => s + m.amount, 0) ?? 0;
   const collected = project.milestones?.filter((m) => m.paid).reduce((s, m) => s + m.amount, 0) ?? 0;
+  const pendingAmount = total - collected;
 
   return (
     <Link href={`/projects/${project.id}`}>
@@ -42,6 +44,11 @@ export function ProjectCard({ project }: ProjectCardProps) {
               <span className="text-3xl font-semibold text-muted-foreground/20">
                 {project.name.charAt(0).toUpperCase()}
               </span>
+            </div>
+          )}
+          {priorityRank !== undefined && (
+            <div className="absolute top-2 left-2 h-5 min-w-5 px-1.5 rounded-md bg-amber-500 flex items-center justify-center">
+              <span className="text-[10px] font-bold text-white">#{priorityRank}</span>
             </div>
           )}
         </div>
@@ -77,6 +84,11 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 collected === total ? "text-emerald-500" : "text-muted-foreground/40"
               )}>
                 {formatCompact(collected)}/{formatCompact(total)}
+              </p>
+            )}
+            {pendingAmount > 0 && (
+              <p className="text-[11px] font-semibold text-amber-600 ml-auto">
+                {formatCompact(pendingAmount)} pending
               </p>
             )}
           </div>

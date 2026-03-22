@@ -31,29 +31,51 @@ function formatCompact(n: number) {
   return `$${n}`;
 }
 
-export function ProjectTable({ projects }: { projects: Project[] }) {
+export function ProjectTable({
+  projects,
+  priorityRanks,
+}: {
+  projects: Project[];
+  priorityRanks: Record<string, number>;
+}) {
   const router = useRouter();
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead className="w-10">#</TableHead>
           <TableHead>Project</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Tags</TableHead>
           <TableHead className="text-right">Tasks</TableHead>
           <TableHead className="text-right">Payments</TableHead>
+          <TableHead className="text-right">Pending</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {projects.map((project) => {
           const tags = project.tags ? project.tags.split(",").filter(Boolean) : [];
+          const total = project.milestones?.reduce((s, m) => s + m.amount, 0) ?? 0;
+          const collected = project.milestones?.filter((m) => m.paid).reduce((s, m) => s + m.amount, 0) ?? 0;
+          const pendingAmount = total - collected;
+          const rank = priorityRanks[project.id];
+
           return (
             <TableRow
               key={project.id}
               className="cursor-pointer hover:bg-muted/30"
               onClick={() => router.push(`/projects/${project.id}`)}
             >
+              <TableCell>
+                {rank !== undefined ? (
+                  <span className="inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-md bg-amber-500 text-[10px] font-bold text-white">
+                    {rank}
+                  </span>
+                ) : (
+                  <span className="text-[11px] text-muted-foreground/25">—</span>
+                )}
+              </TableCell>
               <TableCell>
                 <div className="flex items-center gap-3">
                   {project.logoUrl ? (
@@ -104,19 +126,25 @@ export function ProjectTable({ projects }: { projects: Project[] }) {
                 {project._count.tasks}
               </TableCell>
               <TableCell className="text-right">
-                {(() => {
-                  const total = project.milestones?.reduce((s, m) => s + m.amount, 0) ?? 0;
-                  const collected = project.milestones?.filter((m) => m.paid).reduce((s, m) => s + m.amount, 0) ?? 0;
-                  if (total === 0) return <span className="text-[12px] text-muted-foreground/30">—</span>;
-                  return (
-                    <span className={cn(
-                      "text-[12px] font-medium",
-                      collected === total ? "text-emerald-500" : "text-muted-foreground/60"
-                    )}>
-                      {formatCompact(collected)}/{formatCompact(total)}
-                    </span>
-                  );
-                })()}
+                {total === 0 ? (
+                  <span className="text-[12px] text-muted-foreground/30">—</span>
+                ) : (
+                  <span className={cn(
+                    "text-[12px] font-medium",
+                    collected === total ? "text-emerald-500" : "text-muted-foreground/60"
+                  )}>
+                    {formatCompact(collected)}/{formatCompact(total)}
+                  </span>
+                )}
+              </TableCell>
+              <TableCell className="text-right">
+                {pendingAmount > 0 ? (
+                  <span className="text-[12px] font-semibold text-amber-600">
+                    {formatCompact(pendingAmount)}
+                  </span>
+                ) : (
+                  <span className="text-[12px] text-emerald-500 font-medium">Paid</span>
+                )}
               </TableCell>
             </TableRow>
           );
