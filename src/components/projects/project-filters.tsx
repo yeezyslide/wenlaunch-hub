@@ -25,7 +25,8 @@ export function ProjectFilters() {
     } else {
       params.set(key, value);
     }
-    router.push(`/?${params.toString()}`);
+    router.replace(`/?${params.toString()}`);
+    router.refresh();
   }
 
   return (

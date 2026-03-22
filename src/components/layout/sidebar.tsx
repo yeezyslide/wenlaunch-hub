@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CheckSquare, Settings, ChevronDown, FolderOpen, BookOpen, ClipboardList } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Settings, ChevronDown, FolderOpen, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const BRAND_RED = "#FC4C48";
@@ -31,7 +31,7 @@ export function Sidebar() {
   const isProjectsActive = pathname === "/" || pathname.startsWith("/projects");
   const isTasksActive = pathname.startsWith("/tasks");
   const isAdminActive = pathname.startsWith("/admin-tasks");
-  const isResourcesActive = pathname.startsWith("/resources");
+
   const isSettingsActive = pathname.startsWith("/settings");
 
   return (
@@ -134,20 +134,6 @@ export function Sidebar() {
         >
           <CheckSquare className="h-[16px] w-[16px]" style={{ color: BRAND_RED }} />
           All Tasks
-        </Link>
-
-        {/* Resources */}
-        <Link
-          href="/resources"
-          className={cn(
-            "flex items-center gap-2.5 rounded-lg px-3 py-[7px] text-[13px] font-medium transition-all duration-150",
-            isResourcesActive
-              ? "bg-accent text-foreground shadow-sm"
-              : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
-          )}
-        >
-          <BookOpen className="h-[16px] w-[16px]" style={{ color: BRAND_RED }} />
-          Resources
         </Link>
 
         {/* Settings */}

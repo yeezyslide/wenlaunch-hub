@@ -59,7 +59,8 @@ export function AdminTasksView({ tasks: initialTasks }: { tasks: AdminTask[] }) 
   function setView(v: string) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("view", v);
-    router.push(`/admin-tasks?${params.toString()}`);
+    router.replace(`/admin-tasks?${params.toString()}`);
+    router.refresh();
   }
 
   async function addTask() {

@@ -31,7 +31,8 @@ export function TaskFilters({ projects, members }: TaskFiltersProps) {
     } else {
       params.set(key, value);
     }
-    router.push(`/tasks?${params.toString()}`);
+    router.replace(`/tasks?${params.toString()}`);
+    router.refresh();
   }
 
   return (

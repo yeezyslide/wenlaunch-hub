@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { ProjectCard } from "@/components/projects/project-card";
 import { ProjectForm } from "@/components/projects/project-form";
 import { ProjectFilters } from "@/components/projects/project-filters";
+import { ProjectStats } from "@/components/projects/project-stats";
 import { ProjectTable } from "@/components/projects/project-table";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +31,28 @@ export default async function DashboardPage({
     orderBy: { createdAt: "desc" },
   });
 
+  // Compute financial stats across ALL projects (unfiltered)
+  const allProjects = statusFilter || tagFilter
+    ? await prisma.project.findMany({
+        include: { milestones: { select: { amount: true, paid: true } } },
+      })
+    : projects;
+
+  const DONE_STATUSES = ["Done"];
+  const activeProjects = allProjects.filter(
+    (p) => !DONE_STATUSES.includes(p.status)
+  ).length;
+
+  let totalRevenue = 0;
+  let collected = 0;
+  for (const p of allProjects) {
+    for (const m of p.milestones) {
+      totalRevenue += m.amount;
+      if (m.paid) collected += m.amount;
+    }
+  }
+  const pending = totalRevenue - collected;
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
@@ -39,6 +62,12 @@ export default async function DashboardPage({
         </div>
         <ProjectForm />
       </div>
+      <ProjectStats
+        activeProjects={activeProjects}
+        totalRevenue={totalRevenue}
+        collected={collected}
+        pending={pending}
+      />
       <div className="mb-5">
         <Suspense>
           <ProjectFilters />
