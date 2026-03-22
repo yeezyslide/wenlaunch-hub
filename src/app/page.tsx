@@ -90,10 +90,10 @@ export default async function DashboardPage({
           <p className="text-[14px]">Create your first project to get started.</p>
         </div>
       ) : view === "table" ? (
-        <ProjectTable projects={projects} priorityRanks={priorityRanks} />
+        <ProjectTable projects={rankedProjects} priorityRanks={priorityRanks} />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {projects.map((project) => (
+          {rankedProjects.map((project) => (
             <ProjectCard
               key={project.id}
               project={project}

@@ -47,8 +47,8 @@ export function ProjectCard({ project, priorityRank }: ProjectCardProps) {
             </div>
           )}
           {priorityRank !== undefined && (
-            <div className="absolute top-2 left-2 h-5 min-w-5 px-1.5 rounded-md bg-amber-500 flex items-center justify-center">
-              <span className="text-[10px] font-bold text-white">#{priorityRank}</span>
+            <div className="absolute top-2 left-2 h-5 min-w-5 px-1.5 rounded-md bg-foreground/70 backdrop-blur-sm flex items-center justify-center">
+              <span className="text-[10px] font-bold text-background">#{priorityRank}</span>
             </div>
           )}
         </div>
@@ -87,7 +87,7 @@ export function ProjectCard({ project, priorityRank }: ProjectCardProps) {
               </p>
             )}
             {pendingAmount > 0 && (
-              <p className="text-[11px] font-semibold text-amber-600 ml-auto">
+              <p className="text-[11px] font-semibold text-muted-foreground ml-auto">
                 {formatCompact(pendingAmount)} pending
               </p>
             )}

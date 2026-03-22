@@ -69,7 +69,7 @@ export function ProjectTable({
             >
               <TableCell>
                 {rank !== undefined ? (
-                  <span className="inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-md bg-amber-500 text-[10px] font-bold text-white">
+                  <span className="inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-md bg-foreground/70 text-[10px] font-bold text-background">
                     {rank}
                   </span>
                 ) : (
