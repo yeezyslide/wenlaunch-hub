@@ -29,7 +29,7 @@ export async function PUT(
   if (data.dueDate === null) {
     data.dueDate = null;
   } else if (typeof data.dueDate === "string") {
-    data.dueDate = new Date(data.dueDate as string);
+    data.dueDate = new Date((data.dueDate as string) + "T12:00:00.000Z");
   } else {
     delete data.dueDate;
   }

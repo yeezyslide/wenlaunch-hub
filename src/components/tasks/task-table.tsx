@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PRIORITY_COLORS, TASK_STATUS_COLORS } from "@/lib/constants";
-import { cn } from "@/lib/utils";
+import { cn, parseLocalDate } from "@/lib/utils";
 import { format, isPast, isToday } from "date-fns";
 
 interface Task {
@@ -122,8 +122,8 @@ export function TaskTable({ tasks, projects, members }: TaskTableProps) {
           const overdue =
             task.dueDate &&
             task.status !== "Done" &&
-            isPast(new Date(task.dueDate)) &&
-            !isToday(new Date(task.dueDate));
+            isPast(parseLocalDate(task.dueDate)) &&
+            !isToday(parseLocalDate(task.dueDate));
           return (
                 <TableRow
                   key={task.id}
@@ -158,7 +158,7 @@ export function TaskTable({ tasks, projects, members }: TaskTableProps) {
                     )}
                   >
                     {task.dueDate
-                      ? format(new Date(task.dueDate), "MMM d, yyyy")
+                      ? format(parseLocalDate(task.dueDate), "MMM d, yyyy")
                       : "\u2014"}
                   </TableCell>
                   <TableCell>

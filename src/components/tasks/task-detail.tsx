@@ -45,7 +45,7 @@ export function TaskDetail({ task, projects, members }: TaskDetailProps) {
   const [status, setStatus] = useState(task.status);
   const [priority, setPriority] = useState(task.priority);
   const [dueDate, setDueDate] = useState(
-    task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : ""
+    task.dueDate ? String(task.dueDate).split("T")[0] : ""
   );
   const [assigneeId, setAssigneeId] = useState(task.assigneeId ?? "none");
   const [projectId, setProjectId] = useState(task.projectId);

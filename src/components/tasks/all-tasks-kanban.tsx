@@ -10,7 +10,7 @@ import {
 } from "@hello-pangea/dnd";
 import { Badge } from "@/components/ui/badge";
 import { TASK_STATUSES, TASK_STATUS_COLORS, PRIORITY_COLORS } from "@/lib/constants";
-import { cn } from "@/lib/utils";
+import { cn, parseLocalDate } from "@/lib/utils";
 import { TaskForm } from "./task-form";
 import { format } from "date-fns";
 import { Calendar, Pencil } from "lucide-react";
@@ -155,7 +155,7 @@ export function AllTasksKanban({ tasks: initialTasks, projects, members }: AllTa
                               {task.dueDate && (
                                 <span className="text-[11px] text-muted-foreground/70 flex items-center gap-1">
                                   <Calendar className="h-3 w-3" />
-                                  {format(new Date(task.dueDate), "MMM d")}
+                                  {format(parseLocalDate(task.dueDate), "MMM d")}
                                 </span>
                               )}
                             </div>

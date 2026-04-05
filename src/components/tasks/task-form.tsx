@@ -56,7 +56,7 @@ export function TaskForm({
   const [status, setStatus] = useState(task?.status ?? "To Do");
   const [priority, setPriority] = useState(task?.priority ?? "Medium");
   const [dueDate, setDueDate] = useState(
-    task?.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : ""
+    task?.dueDate ? String(task.dueDate).split("T")[0] : ""
   );
   const [assigneeId, setAssigneeId] = useState(task?.assigneeId ?? "none");
   const [selectedProjectId, setSelectedProjectId] = useState(

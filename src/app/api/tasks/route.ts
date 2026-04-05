@@ -53,7 +53,7 @@ export async function POST(request: Request) {
       description: parsed.data.description || null,
       status: parsed.data.status,
       priority: parsed.data.priority,
-      dueDate: parsed.data.dueDate ? new Date(parsed.data.dueDate) : null,
+      dueDate: parsed.data.dueDate ? new Date(parsed.data.dueDate + "T12:00:00.000Z") : null,
       projectId: parsed.data.projectId,
       assigneeId: parsed.data.assigneeId || null,
       position: (maxPosition._max.position ?? -1) + 1,
