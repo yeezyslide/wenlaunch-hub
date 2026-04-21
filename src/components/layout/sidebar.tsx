@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CheckSquare, Settings, ChevronDown, FolderOpen, ClipboardList } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Settings, ChevronDown, FolderOpen, ClipboardList, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "./theme-toggle";
 
 const BRAND_RED = "#FC4C48";
 
@@ -32,6 +33,7 @@ export function Sidebar() {
   const isTasksActive = pathname.startsWith("/tasks");
   const isAdminActive = pathname.startsWith("/admin-tasks");
 
+  const isCrmActive = pathname.startsWith("/crm");
   const isSettingsActive = pathname.startsWith("/settings");
 
   return (
@@ -136,6 +138,46 @@ export function Sidebar() {
           All Tasks
         </Link>
 
+        {/* CRM */}
+        <Link
+          href="/crm"
+          className={cn(
+            "flex items-center gap-2.5 rounded-lg px-3 py-[7px] text-[13px] font-medium transition-all duration-150",
+            isCrmActive
+              ? "bg-accent text-foreground shadow-sm"
+              : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+          )}
+        >
+          <Users className="h-[16px] w-[16px]" style={{ color: BRAND_RED }} />
+          CRM
+        </Link>
+        {isCrmActive && (
+          <div className="ml-4 mt-0.5 space-y-0.5 border-l border-border/40 pl-2">
+            <Link
+              href="/crm"
+              className={cn(
+                "flex items-center gap-2 rounded-md px-2.5 py-[5px] text-[12px] font-medium transition-all duration-150",
+                pathname === "/crm"
+                  ? "bg-accent/80 text-foreground"
+                  : "text-muted-foreground/70 hover:bg-accent/40 hover:text-foreground"
+              )}
+            >
+              Pipeline
+            </Link>
+            <Link
+              href="/crm/clients"
+              className={cn(
+                "flex items-center gap-2 rounded-md px-2.5 py-[5px] text-[12px] font-medium transition-all duration-150",
+                pathname === "/crm/clients"
+                  ? "bg-accent/80 text-foreground"
+                  : "text-muted-foreground/70 hover:bg-accent/40 hover:text-foreground"
+              )}
+            >
+              Clients
+            </Link>
+          </div>
+        )}
+
         {/* Settings */}
         <Link
           href="/settings"
@@ -150,10 +192,9 @@ export function Sidebar() {
           Settings
         </Link>
       </nav>
-      <div className="px-4 py-4 border-t border-border/50">
-        <p className="text-[11px] text-muted-foreground/60 font-medium">
-          v1.0
-        </p>
+      <div className="px-4 py-4 border-t border-border/50 flex items-center justify-between">
+        <p className="text-[11px] text-muted-foreground/60 font-medium">v1.0</p>
+        <ThemeToggle />
       </div>
     </aside>
   );
